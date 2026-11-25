@@ -63,6 +63,15 @@ describe('exit codes', () => {
     expect(r.stderr).not.toContain('not available')
   })
 
+  it('--version and -v print the package version and exit 0 (rpc-harden F5)', async () => {
+    const pkg = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf8')) as { version: string }
+    for (const flag of ['--version', '-v']) {
+      const r = await cli([flag])
+      expect(r.code).toBe(0)
+      expect(r.stdout).toBe(`${pkg.version}\n`)
+    }
+  })
+
   it('--help prints the usage and exits 0', async () => {
     const r = await cli(['--help'])
     expect(r.code).toBe(0)

@@ -24,6 +24,10 @@ import { exactUtf8, FixError, planFix, splitBom, unifiedDiff, type FixPlan } fro
 import { failsAt, formatAnnotations, formatDiagnosticAnnotations, formatJson, formatText, type CheckReport } from './report'
 import { manifestRuntimesOf, projectRootsOf, scanFiles } from './scan'
 import type { Diagnostic, Finding, Runtime, Severity, Source } from './types'
+import packageJson from '../package.json'
+
+/** The package version, from package.json at build time. */
+export const VERSION: string = packageJson.version
 
 const RUNTIMES: readonly Runtime[] = ['node', 'python', 'go']
 const SEVERITIES: readonly Severity[] = ['error', 'warning', 'info']
@@ -49,9 +53,11 @@ Options:
   --runtime node,python,go    only these runtimes (default: all)
   --fail-on error|warning|info  exit 1 when a finding is at or above this level (default: error)
   --date YYYY-MM-DD           check end-of-life and LTS aliases as of this date (default: today, UTC)
-  --include-fixtures          also scan fixtures/, __fixtures__/, testdata/, test-fixtures/ (skipped by default)
+  --include-fixtures          also scan fixture folders (skipped by default: fixtures/, fixture/,
+                              __fixtures__/, test_fixtures/, test-fixtures/, testdata/, test_data/ ...)
   --exclude <glob>            skip matching paths (repeatable; 'examples', 'docs/**', '*.Dockerfile')
   --fix --to <version>        rewrite pins to <version> (with --runtime <one>, --dry-run, --fix-ranges)
+  -v, --version               print the version
   -h, --help                  show this help
 
 Exit codes: 0 no finding at or above --fail-on, 1 findings, 2 usage or I/O error.
@@ -79,6 +85,7 @@ export interface CliOptions {
   dryRun: boolean
   fixRanges: boolean
   help: boolean
+  version: boolean
 }
 
 class UsageError extends Error {}
@@ -107,6 +114,7 @@ export function parseCliArgs(argv: readonly string[]): CliOptions {
         'dry-run': { type: 'boolean' },
         'fix-ranges': { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
+        version: { type: 'boolean', short: 'v' },
       },
     })
   } catch (err) {
@@ -149,6 +157,7 @@ export function parseCliArgs(argv: readonly string[]): CliOptions {
     dryRun: v['dry-run'] === true,
     fixRanges: v['fix-ranges'] === true,
     help: v.help === true,
+    version: v.version === true,
   }
 }
 
@@ -348,6 +357,10 @@ export async function run(argv: readonly string[], io: CliIo = defaultIo()): Pro
   } catch (err) {
     io.stderr(`runtime-pin-check: ${(err as Error).message}\n\n${USAGE}`)
     return 2
+  }
+  if (options.version) {
+    io.stdout(`${VERSION}\n`)
+    return 0
   }
   if (options.help) {
     io.stdout(USAGE)
