@@ -40,5 +40,20 @@ describe('README', () => {
     expect(README).toContain('`.gitlab-ci.yml` (`image: python:`)')
     expect(README).toContain('`.gitlab-ci.yml` (`image: golang:`)')
   })
-})
 
+  it('bash blocks that run the repo build or examples say they start from a clone (rpc-night R2-1)', () => {
+    // The npm package ships only dist/ + README: `npm ci` or `examples/...` in an empty dir fails.
+    const blocks = [...README.matchAll(/```bash\n([\s\S]*?)```/g)].map((m) => m[1] as string)
+    const fromClone = blocks.filter((b) => /npm ci|node dist\/cli\.js|examples\//.test(b))
+    expect(fromClone.length).toBeGreaterThanOrEqual(3)
+    for (const b of fromClone) {
+      expect(b, `block needs a clone step:\n${b}`).toMatch(/git clone https:\/\/github\.com\/Mammost1\/runtime-pin-check|cd runtime-pin-check/)
+    }
+  })
+
+  it('inline "from source" instructions mention git clone (rpc-night R2-1)', () => {
+    for (const line of README.split('\n').filter((l) => /npm ci && npm run build/.test(l) && !l.startsWith('npm ci'))) {
+      expect(line).toContain('git clone')
+    }
+  })
+})

@@ -15,6 +15,7 @@
 `package.json` ต้องการ `>=22 <23`, `.python-version` 3.11 แต่ `pyproject.toml` ต้องการ `>=3.12`)
 
 ```bash
+git clone https://github.com/Mammost1/runtime-pin-check && cd runtime-pin-check
 npm ci && npm run build
 node dist/cli.js examples/conflict-demo --date 2026-11-25
 ```
@@ -92,7 +93,7 @@ npx runtime-pin-check [dir] [options]
 # หรือติดตั้งในโปรเจกต์: npm install -D runtime-pin-check แล้วรัน npx runtime-pin-check
 ```
 
-จากซอร์ส (สำหรับพัฒนาโปรเจกต์นี้): `npm ci && npm run build` แล้วรัน `node dist/cli.js [dir] [options]`
+จากซอร์ส (สำหรับพัฒนาโปรเจกต์นี้): `git clone https://github.com/Mammost1/runtime-pin-check && cd runtime-pin-check && npm ci && npm run build` แล้วรัน `node dist/cli.js [dir] [options]`
 
 | ตัวเลือก | ความหมาย |
 |---|---|
@@ -114,6 +115,9 @@ annotation `::error file=…,line=…::` ให้ด้วย
 ### `--fix`
 
 ```bash
+# ถ้ายังไม่ได้ clone ให้ทำสองบรรทัดนี้ก่อน (ถ้าอยู่ใน clone แล้วข้ามได้)
+git clone https://github.com/Mammost1/runtime-pin-check && cd runtime-pin-check
+npm ci && npm run build
 node dist/cli.js examples/conflict-demo --fix --to 22 --runtime node --dry-run
 ```
 
@@ -266,6 +270,7 @@ pin, real semver comparison, results per project in a monorepo, and a `--fix` th
 `examples/conflict-demo/` has files that pin conflicting versions. The Thai section above shows the full output of
 
 ```bash
+git clone https://github.com/Mammost1/runtime-pin-check && cd runtime-pin-check
 npm ci && npm run build
 node dist/cli.js examples/conflict-demo --date 2026-11-25
 ```
@@ -313,7 +318,7 @@ npx runtime-pin-check [dir] [options]
 # or install it in a project: npm install -D runtime-pin-check, then npx runtime-pin-check
 ```
 
-From source (to work on this project): `npm ci && npm run build`, then `node dist/cli.js [dir] [options]`.
+From source (to work on this project): `git clone https://github.com/Mammost1/runtime-pin-check && cd runtime-pin-check && npm ci && npm run build`, then `node dist/cli.js [dir] [options]`.
 
 Options are listed in the Thai table above and in `--help`: `--json`, `--runtime node,python,go`, `--fail-on error|warning|info` (default `error`), `--date YYYY-MM-DD`,
 `--include-fixtures` (fixture folders such as `fixtures`, `__fixtures__`, `test_fixtures`, `testdata`, `test_data` are skipped by default; `test/` and `tests/` are not), `--exclude <glob>` (repeatable), `--version`, and `--fix --to <version>` with `--runtime <one>`, `--dry-run`, `--fix-ranges`. Exit codes: `0` nothing at or above `--fail-on`,
