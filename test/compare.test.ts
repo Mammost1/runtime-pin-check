@@ -217,7 +217,7 @@ describe('grouped findings (A10)', () => {
     ])
     expect(f.map((x) => x.code)).toEqual(['PRECISION_MISMATCH'])
     expect(f[0]?.sources).toHaveLength(3)
-    expect(f[0]?.message).toBe('node: these pins agree but are written at different precision: 22.11.0 (.node-version:1), 22 (.nvmrc:1), 22.11 (Dockerfile:1).')
+    expect(f[0]?.message).toBe('node: pins that agree but are written at different precision: 22 (.nvmrc:1) includes 22.11.0 (.node-version:1), 22.11 (Dockerfile:1).')
   })
 
   it('still merges a conflict between shared root files across every root', () => {
@@ -350,6 +350,30 @@ describe('A14: container files in non-project folders of a manifest-less root', 
     expect(s?.boundTo).toEqual(['sdks/node'])
     const [g] = bindSources([src('.github/workflows/ci.yml', 9, '20', 'setup-node', 'node', { paths: ['**/package-lock.json'] })], roots, m)
     expect(g?.boundTo).toEqual([])
+  })
+})
+
+describe('rpc-harden F1: PRECISION_MISMATCH only groups pins that agree', () => {
+  it('keeps 24.x and 26.x apart (published 0.1.0 listed them as one agreeing set)', () => {
+    const f = compareSources([
+      src('.nvmrc', 1, '24', 'nvmrc'),
+      src('Dockerfile', 1, '26', 'dockerfile'),
+      src('.github/workflows/a.yml', 9, '24.22.2', 'setup-node'),
+      src('.github/workflows/b.yml', 9, '26.13.0', 'setup-node'),
+    ])
+    const pm = f.find((x) => x.code === 'PRECISION_MISMATCH')
+    expect(pm?.message).toBe(
+      'node: pins that agree but are written at different precision: 24 (.nvmrc:1) includes 24.22.2 (.github/workflows/a.yml:9); 26 (Dockerfile:1) includes 26.13.0 (.github/workflows/b.yml:9).',
+    )
+    // The disagreement itself is the VERSION_CONFLICT, reported separately.
+    expect(f.map((x) => x.code)).toEqual(['VERSION_CONFLICT', 'PRECISION_MISMATCH'])
+  })
+
+  it('never says two finer pins agree with each other when they do not', () => {
+    const f = compareSources([src('.nvmrc', 1, '22', 'nvmrc'), src('.node-version', 1, '22.11.0', 'node-version'), src('Dockerfile', 1, '22.12.0', 'dockerfile')])
+    expect(f.find((x) => x.code === 'PRECISION_MISMATCH')?.message).toBe(
+      'node: pins that agree but are written at different precision: 22 (.nvmrc:1) includes 22.11.0 (.node-version:1), 22.12.0 (Dockerfile:1).',
+    )
   })
 })
 

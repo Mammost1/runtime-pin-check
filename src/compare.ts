@@ -306,34 +306,44 @@ function versionConflict(out: Collector, scope: Scope, pins: readonly Comparable
   )
 }
 
-/** One PRECISION_MISMATCH for the scope: pins that agree but are written at different precision. */
+/** How many version components a plain pin states: `22` → 1, `22.11` → 2, `22.11.0` → 3. */
+function precisionOf(c: Source['constraint']): number {
+  return c.kind === 'exact' ? 3 : c.kind === 'partial' ? c.version.split('.').length : 0
+}
+
+/**
+ * One PRECISION_MISMATCH for the scope: each coarser pin with the finer pins it includes
+ * (`24 (.nvmrc:1) includes 24.22.2 (a.yml:9)`). Only pins that really agree are put together:
+ * a 24.x pin and a 26.x pin never share a group (rpc-harden F1).
+ */
 function precisionMismatch(out: Collector, scope: Scope, pins: readonly Comparable[]): void {
-  const involved = new Set<Source>()
-  for (let i = 0; i < pins.length; i++) {
-    for (let j = i + 1; j < pins.length; j++) {
-      const a = pins[i] as Comparable
-      const b = pins[j] as Comparable
-      const ca = a.source.constraint
-      const cb = b.source.constraint
-      if (
-        (ca.kind === 'exact' || ca.kind === 'partial') &&
-        (cb.kind === 'exact' || cb.kind === 'partial') &&
-        ca.version !== cb.version &&
-        overlaps(a.range, b.range)
-      ) {
-        involved.add(a.source)
-        involved.add(b.source)
-      }
-    }
+  const plain = pins.filter((p) => precisionOf(p.source.constraint) > 0)
+  const groups: { coarse: Source; finer: Source[] }[] = []
+  for (const coarse of [...plain].sort((a, b) => byPosition(a.source, b.source))) {
+    const level = precisionOf(coarse.source.constraint)
+    if (level === 3) continue
+    const finer = plain
+      .filter((p) => precisionOf(p.source.constraint) > level && overlaps(coarse.range, p.range))
+      .map((p) => p.source)
+      .sort(byPosition)
+    // 22.11 inside a group led by 22 adds nothing when its finer pins are already listed there.
+    const covered = groups.some((g) => g.finer.includes(coarse.source) && finer.every((f) => g.finer.includes(f)))
+    if (finer.length > 0 && !covered) groups.push({ coarse: coarse.source, finer })
   }
-  if (involved.size === 0) return
-  const { text } = groupedList([...involved])
+  if (groups.length === 0) return
+  const involved = new Set<Source>()
+  for (const g of groups) {
+    involved.add(g.coarse)
+    for (const f of g.finer) involved.add(f)
+  }
+  const pin = (s: Source) => `${describeConstraint(s.constraint)} (${where(s)})`
+  const text = groups.map((g) => `${pin(g.coarse)} includes ${g.finer.map(pin).join(', ')}`).join('; ')
   out.add(
     'PRECISION_MISMATCH',
     scope.runtime,
     [...involved],
     scope.root,
-    `${scope.runtime}: these pins agree but are written at different precision: ${text}.`,
+    `${scope.runtime}: pins that agree but are written at different precision: ${text}.`,
   )
 }
 
