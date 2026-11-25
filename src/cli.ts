@@ -261,7 +261,18 @@ function formatFixSummary(plan: FixPlan, options: CliOptions, dryRun: boolean): 
       : `${dryRun ? 'would change' : 'changed'} ${plan.edits.length} pin${plan.edits.length === 1 ? '' : 's'} in ${files} file${files === 1 ? '' : 's'}:`,
   ]
   for (const e of plan.edits) lines.push(`  ${e.file}:${e.line}  ${e.from} -> ${e.to}`)
-  if (plan.unchanged.length > 0) lines.push(`already at ${plan.target}: ${plan.unchanged.length} pin${plan.unchanged.length === 1 ? '' : 's'}`)
+  // A pin written with fewer parts than --to (`1.27` for `--to 1.27.4`) keeps its own precision: it is
+  // not "already at" the target, so it is named instead of being counted with the exact matches.
+  const targetParts = plan.target.replace(/^v/i, '').split('.').length
+  const isShorter = (u: FixPlan['unchanged'][number]) => u.constraint.kind === 'partial' && u.constraint.version.split('.').length < targetParts
+  const shorter = plan.unchanged.filter(isShorter)
+  const exact = plan.unchanged.filter((u) => !isShorter(u))
+  if (exact.length > 0) lines.push(`already at ${plan.target}: ${exact.length} pin${exact.length === 1 ? '' : 's'}`)
+  if (shorter.length > 0) {
+    lines.push(
+      `kept at their own precision (not rewritten): ${shorter.map((u) => `${u.file}:${u.line} "${u.raw}"`).join(', ')}`,
+    )
+  }
   if (plan.skipped.length > 0) {
     lines.push(`left alone (${plan.skipped.length}); nothing is guessed:`)
     // Pins on one line for one reason (a CI matrix of eight versions) are listed together.

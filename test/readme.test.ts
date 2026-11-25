@@ -73,4 +73,9 @@ describe('README', () => {
     expect(README).toContain('Dockerfiles for unrelated helper images')
     expect(README).toContain('Dockerfile ของ image ช่วยงานที่ไม่เกี่ยวกับโปรเจกต์')
   })
+
+  it("says --fix keeps each pin's own precision (rpc-night R2-5)", () => {
+    expect(README).toContain('keeps the precision of each pin')
+    expect(README).toContain('คงความละเอียดของแต่ละ pin')
+  })
 })

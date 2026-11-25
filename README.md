@@ -151,6 +151,8 @@ left alone (1); nothing is guessed:
 `--dry-run` พิมพ์ diff แล้วไม่เขียนไฟล์ ถ้าไม่ใส่ จะเขียนจริง เฉพาะบรรทัดที่เปลี่ยน ไบต์อื่นของไฟล์คงเดิม (รวม BOM ถ้ามี) pin ที่โปรแกรมไม่เข้าใจ
 ถูกข้าม พร้อมบอกเหตุผล ไม่เดา
 
+`--fix` คงความละเอียดของแต่ละ pin: `--to 26.13.0` เปลี่ยน `node:16-alpine` เป็น `node:26-alpine` (ไม่ใช่ `26.13.0-alpine`) และ pin ที่เขียนสั้นกว่า `--to` (เช่น `1.27-alpine3.24` เมื่อ `--to 1.27.4`) จะไม่ถูกเขียนทับ แต่ถูกระบุชื่อในบรรทัด "kept at their own precision"
+
 ### ใช้ใน CI
 
 ไม่มี GitHub Action แยก ให้รัน CLI เป็น step ธรรมดา (ต้องใช้ Node 22 ขึ้นไป):
@@ -338,6 +340,8 @@ conflicts: `node dist/cli.js . --exclude examples`.
 
 `--fix` demo (`--dry-run` prints the diff and writes nothing): the Thai section shows `node dist/cli.js examples/conflict-demo --fix --to 22 --runtime node --dry-run` changing
 `.nvmrc` 20 -> 22 and `Dockerfile` `node:18-alpine` -> `node:22-alpine`, and leaving `package.json`'s `">=22 <23"` alone because it is a range.
+
+`--fix` keeps the precision of each pin: `--to 26.13.0` turns `node:16-alpine` into `node:26-alpine` (not `26.13.0-alpine`), and a pin written with fewer parts than `--to` (`1.27-alpine3.24` for `--to 1.27.4`) is not rewritten but named on the "kept at their own precision" line.
 
 #### In CI
 

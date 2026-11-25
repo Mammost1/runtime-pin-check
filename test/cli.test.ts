@@ -26,6 +26,27 @@ async function cli(args: string[], env: Record<string, string> = {}) {
   return { code, stdout, stderr }
 }
 
+describe('--fix summary (rpc-night R2-5)', () => {
+  it('does not call a shorter pin "already at" the target: it says the precision is kept', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'rpc-fixprec-'))
+    try {
+      await writeFile(join(dir, 'go.mod'), 'module x\n\ngo 1.27.4\n')
+      await writeFile(join(dir, 'Dockerfile'), 'FROM golang:1.27-alpine3.24\nFROM golang:1.27.4\n')
+      const r = await cli([dir, '--fix', '--to', '1.27.4', '--runtime', 'go', '--dry-run'])
+      expect(r.code).toBe(0)
+      expect(r.stderr).toContain('already at 1.27.4: 1 pin')
+      expect(r.stderr).toContain('kept at their own precision (not rewritten): Dockerfile:1 "1.27-alpine3.24"')
+      // A pin with as many parts as --to is simply at the target.
+      await writeFile(join(dir, 'Dockerfile'), 'FROM golang:1.27-alpine3.24\n')
+      const same = await cli([dir, '--fix', '--to', '1.27', '--runtime', 'go', '--dry-run'])
+      expect(same.stderr).toContain('already at 1.27: 1 pin')
+      expect(same.stderr).not.toContain('kept at their own precision')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+})
+
 describe('exit codes', () => {
   it('0 when nothing is at or above --fail-on, 1 when something is', async () => {
     expect((await cli(['clean', ...DATE])).code).toBe(0)
