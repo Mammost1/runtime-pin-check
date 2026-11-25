@@ -145,3 +145,15 @@ describe('rpc-pygo-column review F1 (go)', () => {
     expect(extractGo('.github/workflows/ci.yml', text)[0]).toMatchObject({ line: 7, column: 13, raw: '1.22' })
   })
 })
+
+describe('rpc-harden F7: .gitlab-ci.yml golang images', () => {
+  it('reads job-level official golang images and ignores others', () => {
+    const text = 'build:\n  image: golang:1.24-alpine\ntest:\n  image: docker.io/library/golang:1.23\nx:\n  image: acme/golang:9\n'
+    const s = extractGo('.gitlab-ci.yml', text)
+    expect(s.map((x) => [x.line, x.raw, x.constraint])).toEqual([
+      [2, '1.24-alpine', { kind: 'partial', version: '1.24' }],
+      [4, '1.23', { kind: 'partial', version: '1.23' }],
+    ])
+  })
+})
+

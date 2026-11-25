@@ -5,7 +5,7 @@
  * Not read in v1: `go.work`, and `GOTOOLCHAIN` in the environment.
  */
 import type { Source } from '../../types'
-import { baseName, dockerfileSources, guardColumns, isDockerfile, isMiseFile, isToolVersions, isWorkflowFile, miseSources, toolVersionsSources, workflowSources } from '../python/adapters'
+import { baseName, dockerfileSources, gitlabSources, isGitlabCi, guardColumns, isDockerfile, isMiseFile, isToolVersions, isWorkflowFile, miseSources, toolVersionsSources, workflowSources } from '../python/adapters'
 import { goModSources } from './gomod'
 
 const GO_TOOLS = ['golang', 'go'] as const
@@ -15,6 +15,7 @@ function dispatch(file: string, text: string): Source[] {
   if (isToolVersions(file)) return toolVersionsSources(file, text, 'go', GO_TOOLS)
   if (isMiseFile(file)) return miseSources(file, text, 'go', GO_TOOLS)
   if (isDockerfile(file)) return dockerfileSources(file, text, 'go')
+  if (isGitlabCi(file)) return gitlabSources(file, text, 'go')
   if (isWorkflowFile(file)) return workflowSources(file, text, 'go', 'actions/setup-go', 'go-version')
   return []
 }

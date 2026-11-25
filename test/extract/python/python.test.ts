@@ -350,3 +350,17 @@ describe('review R1: a broken pyproject.toml is reported once (diagnostic) and g
     }
   })
 })
+
+describe('rpc-harden F7: .gitlab-ci.yml python images', () => {
+  const text = 'image: python:3.12\ntest:\n  image: python:3.9-slim\nlint:\n  image:\n    name: python:3.11\nother:\n  image: myorg/python:3.1\nweb:\n  image: node:18\n'
+  it('reads the top-level, job-level and {name:} images of official python only', () => {
+    const s = extractPython('.gitlab-ci.yml', text)
+    expect(s.map((x) => [x.line, x.raw, x.constraint, x.kind])).toEqual([
+      [1, '3.12', { kind: 'partial', version: '3.12' }, 'gitlab-ci'],
+      [3, '3.9-slim', { kind: 'partial', version: '3.9' }, 'gitlab-ci'],
+      [6, '3.11', { kind: 'partial', version: '3.11' }, 'gitlab-ci'],
+    ])
+    for (const x of s) expect(text.split('\n')[x.line - 1]?.slice((x.column as number) - 1).startsWith(x.raw)).toBe(true)
+  })
+})
+

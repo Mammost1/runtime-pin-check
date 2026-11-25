@@ -6,7 +6,7 @@
  * `actions/setup-python` (for example `astral-sh/setup-uv`).
  */
 import type { Source } from '../../types'
-import { baseName, dockerfileSources, guardColumns, isDockerfile, isMiseFile, isToolVersions, isWorkflowFile, miseSources, toolVersionsSources, workflowSources } from './adapters'
+import { baseName, dockerfileSources, gitlabSources, isGitlabCi, guardColumns, isDockerfile, isMiseFile, isToolVersions, isWorkflowFile, miseSources, toolVersionsSources, workflowSources } from './adapters'
 import { pythonVersionFile, pyprojectSources, runtimeTxtSources } from './files'
 
 function dispatch(file: string, text: string): Source[] {
@@ -17,6 +17,7 @@ function dispatch(file: string, text: string): Source[] {
   if (isToolVersions(file)) return toolVersionsSources(file, text, 'python', ['python'])
   if (isMiseFile(file)) return miseSources(file, text, 'python', ['python'])
   if (isDockerfile(file)) return dockerfileSources(file, text, 'python')
+  if (isGitlabCi(file)) return gitlabSources(file, text, 'python')
   if (isWorkflowFile(file)) return workflowSources(file, text, 'python', 'actions/setup-python', 'python-version')
   return []
 }

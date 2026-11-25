@@ -7,6 +7,7 @@ import { dockerTagConstraint, parseConstraint } from '../../constraint'
 import type { Constraint, Runtime, Source } from '../../types'
 import {
   parseDockerfile,
+  parseGitlabCi,
   parseMise,
   parseToolVersions,
   isRuntimeImage,
@@ -98,6 +99,35 @@ export function dockerfileSources(file: string, text: string, runtime: Runtime):
       raw,
       kind: 'dockerfile',
       constraint: dockerConstraint(from.tag, from.digest, runtime),
+    })
+  }
+  return out
+}
+
+/** `.gitlab-ci.yml` at any depth (GitLab reads the root one; the binding rules decide its scope). */
+export function isGitlabCi(file: string): boolean {
+  return /^\.gitlab-ci\.ya?ml$/i.test(baseName(file))
+}
+
+/**
+ * Sources for every `image:` of a `.gitlab-ci.yml` (top level, `default:` and each job) that is an
+ * official image of `runtime` (`python:3.12-slim`, `golang:1.24`; rpc-harden F7).
+ */
+export function gitlabSources(file: string, text: string, runtime: Runtime): Source[] {
+  const out: Source[] = []
+  for (const img of parseGitlabCi(text)) {
+    if (!isRuntimeImage(img.image, runtime)) continue
+    const written = splitImageRef(img.raw)
+    const raw = written.tag ?? img.raw
+    const tagOffset = written.tag === undefined ? 0 : written.image.length + 1
+    out.push({
+      runtime,
+      file,
+      line: img.line,
+      column: img.column + tagOffset,
+      raw,
+      kind: 'gitlab-ci',
+      constraint: dockerConstraint(img.tag, img.digest, runtime),
     })
   }
   return out
