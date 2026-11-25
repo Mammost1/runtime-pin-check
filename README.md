@@ -85,13 +85,14 @@ EOL **ไม่ใช่จุดเด่นของเรา** เครื�
 
 ## ใช้งาน
 
-ยังไม่อยู่บน npm ใช้จากซอร์ส (ต้อง Node 22 ขึ้นไป):
+ต้องใช้ Node 22 ขึ้นไป:
 
 ```bash
-npm ci
-npm run build
-node dist/cli.js [dir] [options]
+npx runtime-pin-check [dir] [options]
+# หรือติดตั้งในโปรเจกต์: npm install -D runtime-pin-check แล้วรัน npx runtime-pin-check
 ```
+
+จากซอร์ส (สำหรับพัฒนาโปรเจกต์นี้): `npm ci && npm run build` แล้วรัน `node dist/cli.js [dir] [options]`
 
 | ตัวเลือก | ความหมาย |
 |---|---|
@@ -100,7 +101,8 @@ node dist/cli.js [dir] [options]
 | `--runtime node,python,go` | ตรวจเฉพาะบางภาษา |
 | `--fail-on error\|warning\|info` | รหัสออก `1` เมื่อมี finding ระดับนี้ขึ้นไป (ค่าเริ่มต้น `error`) |
 | `--date YYYY-MM-DD` | ตรวจ EOL และ alias `lts/*` ณ วันนั้น (ค่าเริ่มต้น วันนี้ตาม UTC) ใช้ทำผลซ้ำได้ |
-| `--include-fixtures` | สแกนโฟลเดอร์ fixture ด้วย (ปกติข้าม `fixtures/`, `__fixtures__/`, `testdata/`, `test-fixtures/`) |
+| `--include-fixtures` | สแกนโฟลเดอร์ fixture ด้วย (ปกติข้ามโฟลเดอร์ชื่อ `fixtures`, `fixture`, `__fixtures__`, `test_fixtures`, `test-fixtures`, `testdata`, `test_data`, `_testdata` ทุกระดับ แต่ไม่ข้าม `test/` หรือ `tests/`) |
+| `--version` | พิมพ์เวอร์ชัน |
 | `--exclude <glob>` | ข้ามพาธที่ตรง (ใส่ซ้ำได้ เช่น `examples`, `docs/**`) |
 | `--fix --to <version>` | แก้ pin เป็นเวอร์ชันนี้ (ใช้ร่วมกับ `--runtime <หนึ่งภาษา>`, `--dry-run`, `--fix-ranges`) |
 
@@ -219,6 +221,9 @@ TI (ถูกตามข้อเท็จจริงแต่ผู้ดู�
   ส่วนใหญ่เป็นขั้นตอน CI ที่ root ซึ่งไม่มี manifest และไม่มีพาธบอกว่าเป็นของโปรเจกต์ไหน ตัวอย่างความขัดแย้งจริงที่เราพลาดเพราะเรื่องนี้ เช่น node 18 เทียบ 20 ใน workflow สองไฟล์ที่ root ที่ไม่มี manifest ของ Node
 - **ขีดจำกัดที่ยังมี:** repository ที่มี Dockerfile หนึ่งไฟล์ต่อ runtime หนึ่งรุ่น (เช่น cypress-docker-images) ยังเทียบกับ pin ที่ root และให้ finding เท็จ
 - **job ที่ประกาศ `defaults.run.working-directory` แต่ override บาง step กลับไปที่ root** ถูกผูกกับโฟลเดอร์ default ทั้ง job (ตั้งใจ: นี่คือวิธีที่ monorepo ประกาศว่า job รับใช้โปรเจกต์ไหน)
+- **pin ที่ root ซึ่งโปรเจกต์ลูกทุกตัวรับต่อ อาจถูกรายงานซ้ำหนึ่งครั้งต่อโปรเจกต์** เช่น `.nvmrc` ที่ root เทียบกับ Dockerfile ใน `examples/*` แต่ละตัว
+  แต่ละรายการถูกต้องตามกติกา แต่ใน monorepo ที่มีโปรเจกต์ตัวอย่างหลายสิบตัวจะยาว ใช้ `--exclude examples` ถ้าไม่ต้องการตรวจโฟลเดอร์ตัวอย่าง
+- PyPy และ GraalPy (`pypy-3.11` ใน `actions/setup-python`) ไม่ถูกเทียบกับ pin ของ CPython ระบบรายงานเป็น `UNPARSEABLE` พร้อมเหตุผล
 - ไม่มี precision ของเครื่องมืออื่นให้เทียบ เพราะไม่ได้ติดป้าย finding ของเขา
 - diagnostic ที่เป็นเท็จ 2 รายการใน 1 จาก 40 repo (YAML หลายเอกสารใต้ `.github/workflows/resources/` ที่ไม่ใช่ workflow) ถูกแก้ใน `f80ed6e` วัดซ้ำบน 40 repo เดิมแล้ว: finding เหมือน `483d4fb` ทุก repo และ diagnostic เหลือ 0
   แต่ยังไม่มี diagnostic จริง (ไฟล์พังจริง) ใน 40 repo นี้ จึงยังไม่มีหลักฐานจาก repo จริงว่า diagnostic จับไฟล์พังได้ (มีเฉพาะ unit test)
@@ -298,16 +303,17 @@ test/fixtures/testdata folders; (4) the space is crowded and moving fast: recon 
 
 ### Use
 
-Not on npm yet. From source (Node 22 or newer):
+Node 22 or newer:
 
 ```bash
-npm ci
-npm run build
-node dist/cli.js [dir] [options]
+npx runtime-pin-check [dir] [options]
+# or install it in a project: npm install -D runtime-pin-check, then npx runtime-pin-check
 ```
 
+From source (to work on this project): `npm ci && npm run build`, then `node dist/cli.js [dir] [options]`.
+
 Options are listed in the Thai table above and in `--help`: `--json`, `--runtime node,python,go`, `--fail-on error|warning|info` (default `error`), `--date YYYY-MM-DD`,
-`--include-fixtures`, `--exclude <glob>` (repeatable), and `--fix --to <version>` with `--runtime <one>`, `--dry-run`, `--fix-ranges`. Exit codes: `0` nothing at or above `--fail-on`,
+`--include-fixtures` (fixture folders such as `fixtures`, `__fixtures__`, `test_fixtures`, `testdata`, `test_data` are skipped by default; `test/` and `tests/` are not), `--exclude <glob>` (repeatable), `--version`, and `--fix --to <version>` with `--runtime <one>`, `--dry-run`, `--fix-ranges`. Exit codes: `0` nothing at or above `--fail-on`,
 `1` findings, `2` usage or I/O error. With `GITHUB_ACTIONS=true` it also prints `::error file=…,line=…::` annotations. To scan this repository itself leave out the deliberate
 conflicts: `node dist/cli.js . --exclude examples`.
 
@@ -381,6 +387,9 @@ Known limits, stated plainly:
   mostly root-level CI steps in repositories whose root has no manifest and where nothing names the project. A real conflict we miss because of this: node 18 against 20 in two workflows at the root of a repository with no Node manifest.
 - **A Dockerfile per runtime release** (for example cypress-docker-images) still compares with the root pin and produces a false finding.
 - **A job that declares `defaults.run.working-directory` but overrides one step back to the root** is bound to the default folder for the whole job. This is deliberate: it is how a monorepo says which project a job serves.
+- **A root pin that every child project inherits can be reported once per project.** For example a root `.nvmrc` against the Dockerfile of each `examples/*` project:
+  each finding is correct under the rules, but a monorepo with dozens of example projects gets a long list. Use `--exclude examples` to leave example folders out.
+- PyPy and GraalPy (`pypy-3.11` in `actions/setup-python`) are not compared with CPython pins; they are reported as `UNPARSEABLE` with that reason.
 - No precision for other tools: we did not label their findings.
 - Two false diagnostics in 1 of the 40 repositories (multi-document YAML under `.github/workflows/resources/` that is not a workflow) were fixed in `f80ed6e` and re-measured on the same 40 repositories: the findings are identical to `483d4fb` in every repository and the diagnostics dropped to 0. There is still no real diagnostic (a genuinely broken file) among the 40, so no evidence from real repositories that diagnostics catch broken files (unit tests only).
 - This README quotes no timings (milliseconds); they depend on the machine. Every figure here can be reproduced with the stated command.
