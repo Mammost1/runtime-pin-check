@@ -1,0 +1,100 @@
+# Weekly: refresh data/eol.json from endoflife.date and open a pull request when something that
+# matters for end-of-life checks changed (a release line, an end-of-life date, an LTS date or a
+# codename). Patch-release churn in the "latest" field alone never opens a pull request.
+#
+# The workflow runs the gates before it opens the pull request, because pull requests created with
+# GITHUB_TOKEN do not start other workflows. Needs the repository setting
+# Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests".
+name: Update EOL data
+
+on:
+  schedule:
+    - cron: '23 4 * * 1' # Mondays 04:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+
+      - name: Fetch endoflife.date (and the Node.js codenames)
+        # The script keeps the previous codename pairs when nodejs.org cannot be read, and warns.
+        run: node scripts/update-eol.mjs
+
+      - name: Did anything that matters change?
+        id: diff
+        run: |
+          git show HEAD:data/eol.json > "$RUNNER_TEMP/old.json"
+          node --input-type=module -e '
+            import { readFileSync, writeFileSync } from "node:fs"
+            const read = (p) => JSON.parse(readFileSync(p, "utf8"))
+            const oldS = read(process.env.RUNNER_TEMP + "/old.json")
+            const newS = read("data/eol.json")
+            const lines = []
+            for (const runtime of ["node", "python", "go"]) {
+              const before = new Map(oldS.products[runtime].map((c) => [c.cycle, c]))
+              const after = new Map(newS.products[runtime].map((c) => [c.cycle, c]))
+              for (const [cycle, c] of after) {
+                const o = before.get(cycle)
+                if (!o) { lines.push(`+ ${runtime} ${cycle}: new release line (end-of-life ${c.eolFrom ?? "not announced"})`); continue }
+                for (const key of ["eolFrom", "ltsFrom", "codename"]) {
+                  if ((o[key] ?? null) !== (c[key] ?? null)) lines.push(`~ ${runtime} ${cycle}: ${key} ${o[key] ?? "none"} -> ${c[key] ?? "none"}`)
+                }
+              }
+              for (const cycle of before.keys()) if (!after.has(cycle)) lines.push(`- ${runtime} ${cycle}: no longer listed`)
+            }
+            writeFileSync(process.env.RUNNER_TEMP + "/changes.txt", lines.join("\n") + "\n")
+            writeFileSync(process.env.GITHUB_OUTPUT, `changed=${lines.length > 0}\n`, { flag: "a" })
+            console.log(lines.length ? lines.join("\n") : "No end-of-life relevant change.")
+          '
+
+      - name: Restore the file when nothing relevant changed
+        if: steps.diff.outputs.changed != 'true'
+        run: git checkout -- data/eol.json
+
+      - name: Gates with the new data
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm run typecheck
+          npm test
+          npm run build
+
+      - name: Open a pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="chore/eol-snapshot-$(date -u +%Y-%m-%d)"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Branch $branch already exists: a pull request for today is open or was merged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add data/eol.json
+          git commit -m "chore: refresh end-of-life data ($(date -u +%Y-%m-%d))"
+          git push origin "$branch"
+          {
+            echo "Weekly refresh of \`data/eol.json\` from endoflife.date (\`node scripts/update-eol.mjs\`)."
+            echo
+            echo "### What changed"
+            echo '```'
+            cat "$RUNNER_TEMP/changes.txt"
+            echo '```'
+            echo
+            echo "typecheck, tests and build passed with the new data before this pull request was opened."
+            echo "Fields other than end-of-life, LTS and codename (for example the latest patch release) can differ too; see the diff."
+          } > "$RUNNER_TEMP/pr.md"
+          gh pr create --base main --head "$branch" --title "chore: refresh end-of-life data" --body-file "$RUNNER_TEMP/pr.md"

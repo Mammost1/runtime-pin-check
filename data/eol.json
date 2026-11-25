@@ -1,0 +1,505 @@
+{
+  "schema": 1,
+  "fetchedAt": "2026-11-25",
+  "attribution": "EOL data from endoflife.date (https://endoflife.date), MIT License, © endoflife.date contributors, fetched 2026-11-25. Node.js LTS codenames from https://nodejs.org/download/release/index.json (Node.js, MIT License).",
+  "sources": [
+    {
+      "name": "endoflife.date",
+      "url": "https://endoflife.date/api/v1/products/",
+      "license": "MIT",
+      "copyright": "© 2020 endoflife.date contributors (https://github.com/endoflife-date/endoflife.date)",
+      "usedFor": "release lines, end-of-life dates, LTS start dates and latest releases of nodejs, python and go"
+    },
+    {
+      "name": "Node.js release index",
+      "url": "https://nodejs.org/download/release/index.json",
+      "license": "MIT (Node.js project; no separate terms page for the index was found)",
+      "copyright": "© Node.js contributors",
+      "usedFor": "LTS codenames (major version to name) only"
+    }
+  ],
+  "products": {
+    "node": [
+      {
+        "cycle": "26",
+        "eolFrom": "2029-04-30",
+        "ltsFrom": "2026-10-28",
+        "latest": "26.13.1",
+        "codename": "lithium"
+      },
+      {
+        "cycle": "25",
+        "eolFrom": "2026-06-01",
+        "ltsFrom": null,
+        "latest": "25.9.0",
+        "codename": null
+      },
+      {
+        "cycle": "24",
+        "eolFrom": "2028-04-30",
+        "ltsFrom": "2025-10-28",
+        "latest": "24.22.3",
+        "codename": "krypton"
+      },
+      {
+        "cycle": "23",
+        "eolFrom": "2025-06-01",
+        "ltsFrom": null,
+        "latest": "23.11.1",
+        "codename": null
+      },
+      {
+        "cycle": "22",
+        "eolFrom": "2027-04-30",
+        "ltsFrom": "2024-10-29",
+        "latest": "22.23.5",
+        "codename": "jod"
+      },
+      {
+        "cycle": "21",
+        "eolFrom": "2024-06-01",
+        "ltsFrom": null,
+        "latest": "21.7.3",
+        "codename": null
+      },
+      {
+        "cycle": "20",
+        "eolFrom": "2026-04-30",
+        "ltsFrom": "2023-10-24",
+        "latest": "20.20.2",
+        "codename": "iron"
+      },
+      {
+        "cycle": "19",
+        "eolFrom": "2023-06-01",
+        "ltsFrom": null,
+        "latest": "19.9.0",
+        "codename": null
+      },
+      {
+        "cycle": "18",
+        "eolFrom": "2025-04-30",
+        "ltsFrom": "2022-10-25",
+        "latest": "18.20.8",
+        "codename": "hydrogen"
+      },
+      {
+        "cycle": "17",
+        "eolFrom": "2022-06-01",
+        "ltsFrom": null,
+        "latest": "17.9.1",
+        "codename": null
+      },
+      {
+        "cycle": "16",
+        "eolFrom": "2023-09-11",
+        "ltsFrom": "2021-10-26",
+        "latest": "16.20.2",
+        "codename": "gallium"
+      },
+      {
+        "cycle": "15",
+        "eolFrom": "2021-06-01",
+        "ltsFrom": null,
+        "latest": "15.14.0",
+        "codename": null
+      },
+      {
+        "cycle": "14",
+        "eolFrom": "2023-04-30",
+        "ltsFrom": "2020-10-27",
+        "latest": "14.21.3",
+        "codename": "fermium"
+      },
+      {
+        "cycle": "13",
+        "eolFrom": "2020-06-01",
+        "ltsFrom": null,
+        "latest": "13.14.0",
+        "codename": null
+      },
+      {
+        "cycle": "12",
+        "eolFrom": "2022-04-30",
+        "ltsFrom": "2019-10-21",
+        "latest": "12.22.12",
+        "codename": "erbium"
+      },
+      {
+        "cycle": "11",
+        "eolFrom": "2019-06-30",
+        "ltsFrom": null,
+        "latest": "11.15.0",
+        "codename": null
+      },
+      {
+        "cycle": "10",
+        "eolFrom": "2021-04-30",
+        "ltsFrom": "2018-10-30",
+        "latest": "10.24.1",
+        "codename": "dubnium"
+      },
+      {
+        "cycle": "9",
+        "eolFrom": "2018-06-30",
+        "ltsFrom": null,
+        "latest": "9.11.2",
+        "codename": null
+      },
+      {
+        "cycle": "8",
+        "eolFrom": "2019-12-31",
+        "ltsFrom": "2017-10-31",
+        "latest": "8.17.0",
+        "codename": "carbon"
+      },
+      {
+        "cycle": "7",
+        "eolFrom": "2017-06-30",
+        "ltsFrom": null,
+        "latest": "7.10.1",
+        "codename": null
+      },
+      {
+        "cycle": "6",
+        "eolFrom": "2019-04-30",
+        "ltsFrom": "2016-10-18",
+        "latest": "6.17.1",
+        "codename": "boron"
+      },
+      {
+        "cycle": "5",
+        "eolFrom": "2016-06-30",
+        "ltsFrom": null,
+        "latest": "5.12.0",
+        "codename": null
+      },
+      {
+        "cycle": "4",
+        "eolFrom": "2018-04-30",
+        "ltsFrom": "2015-10-01",
+        "latest": "4.9.1",
+        "codename": "argon"
+      },
+      {
+        "cycle": "3",
+        "eolFrom": null,
+        "ltsFrom": null,
+        "latest": "3.3.1",
+        "codename": null
+      },
+      {
+        "cycle": "2",
+        "eolFrom": null,
+        "ltsFrom": null,
+        "latest": "2.5.0",
+        "codename": null
+      },
+      {
+        "cycle": "1",
+        "eolFrom": null,
+        "ltsFrom": null,
+        "latest": "1.8.4",
+        "codename": null
+      }
+    ],
+    "python": [
+      {
+        "cycle": "3.15",
+        "eolFrom": "2031-10-31",
+        "ltsFrom": null,
+        "latest": "3.15.2"
+      },
+      {
+        "cycle": "3.14",
+        "eolFrom": "2030-10-31",
+        "ltsFrom": null,
+        "latest": "3.14.10"
+      },
+      {
+        "cycle": "3.13",
+        "eolFrom": "2029-10-31",
+        "ltsFrom": null,
+        "latest": "3.13.18"
+      },
+      {
+        "cycle": "3.12",
+        "eolFrom": "2028-10-31",
+        "ltsFrom": null,
+        "latest": "3.12.16"
+      },
+      {
+        "cycle": "3.11",
+        "eolFrom": "2027-10-31",
+        "ltsFrom": null,
+        "latest": "3.11.18"
+      },
+      {
+        "cycle": "3.10",
+        "eolFrom": "2026-10-01",
+        "ltsFrom": null,
+        "latest": "3.10.22"
+      },
+      {
+        "cycle": "3.9",
+        "eolFrom": "2025-10-31",
+        "ltsFrom": null,
+        "latest": "3.9.25"
+      },
+      {
+        "cycle": "3.8",
+        "eolFrom": "2024-10-07",
+        "ltsFrom": null,
+        "latest": "3.8.20"
+      },
+      {
+        "cycle": "3.7",
+        "eolFrom": "2023-06-27",
+        "ltsFrom": null,
+        "latest": "3.7.17"
+      },
+      {
+        "cycle": "3.6",
+        "eolFrom": "2021-12-23",
+        "ltsFrom": null,
+        "latest": "3.6.15"
+      },
+      {
+        "cycle": "3.5",
+        "eolFrom": "2020-09-30",
+        "ltsFrom": null,
+        "latest": "3.5.10"
+      },
+      {
+        "cycle": "3.4",
+        "eolFrom": "2019-03-18",
+        "ltsFrom": null,
+        "latest": "3.4.10"
+      },
+      {
+        "cycle": "3.3",
+        "eolFrom": "2017-09-29",
+        "ltsFrom": null,
+        "latest": "3.3.7"
+      },
+      {
+        "cycle": "3.2",
+        "eolFrom": "2016-02-20",
+        "ltsFrom": null,
+        "latest": "3.2.6"
+      },
+      {
+        "cycle": "2.7",
+        "eolFrom": "2020-01-01",
+        "ltsFrom": null,
+        "latest": "2.7.18"
+      },
+      {
+        "cycle": "3.1",
+        "eolFrom": "2012-04-09",
+        "ltsFrom": null,
+        "latest": "3.1.5"
+      },
+      {
+        "cycle": "3.0",
+        "eolFrom": "2009-06-27",
+        "ltsFrom": null,
+        "latest": "3.0.1"
+      },
+      {
+        "cycle": "2.6",
+        "eolFrom": "2013-10-29",
+        "ltsFrom": null,
+        "latest": "2.6.9"
+      },
+      {
+        "cycle": "2.5",
+        "eolFrom": "2011-05-26",
+        "ltsFrom": null,
+        "latest": "2.5.6"
+      },
+      {
+        "cycle": "2.4",
+        "eolFrom": "2008-12-19",
+        "ltsFrom": null,
+        "latest": "2.4.6"
+      },
+      {
+        "cycle": "2.3",
+        "eolFrom": "2008-03-11",
+        "ltsFrom": null,
+        "latest": "2.3.7"
+      },
+      {
+        "cycle": "2.2",
+        "eolFrom": "2003-05-30",
+        "ltsFrom": null,
+        "latest": "2.2.3"
+      },
+      {
+        "cycle": "2.1",
+        "eolFrom": "2002-04-09",
+        "ltsFrom": null,
+        "latest": "2.1.3"
+      }
+    ],
+    "go": [
+      {
+        "cycle": "1.27",
+        "eolFrom": null,
+        "ltsFrom": null,
+        "latest": "1.27.4"
+      },
+      {
+        "cycle": "1.26",
+        "eolFrom": null,
+        "ltsFrom": null,
+        "latest": "1.26.11"
+      },
+      {
+        "cycle": "1.25",
+        "eolFrom": "2026-08-19",
+        "ltsFrom": null,
+        "latest": "1.25.14"
+      },
+      {
+        "cycle": "1.24",
+        "eolFrom": "2026-02-10",
+        "ltsFrom": null,
+        "latest": "1.24.13"
+      },
+      {
+        "cycle": "1.23",
+        "eolFrom": "2025-08-12",
+        "ltsFrom": null,
+        "latest": "1.23.12"
+      },
+      {
+        "cycle": "1.22",
+        "eolFrom": "2025-02-11",
+        "ltsFrom": null,
+        "latest": "1.22.12"
+      },
+      {
+        "cycle": "1.21",
+        "eolFrom": "2024-08-13",
+        "ltsFrom": null,
+        "latest": "1.21.13"
+      },
+      {
+        "cycle": "1.20",
+        "eolFrom": "2024-02-06",
+        "ltsFrom": null,
+        "latest": "1.20.14"
+      },
+      {
+        "cycle": "1.19",
+        "eolFrom": "2023-09-06",
+        "ltsFrom": null,
+        "latest": "1.19.13"
+      },
+      {
+        "cycle": "1.18",
+        "eolFrom": "2023-02-01",
+        "ltsFrom": null,
+        "latest": "1.18.10"
+      },
+      {
+        "cycle": "1.17",
+        "eolFrom": "2022-08-02",
+        "ltsFrom": null,
+        "latest": "1.17.13"
+      },
+      {
+        "cycle": "1.16",
+        "eolFrom": "2022-03-15",
+        "ltsFrom": null,
+        "latest": "1.16.15"
+      },
+      {
+        "cycle": "1.15",
+        "eolFrom": "2021-08-16",
+        "ltsFrom": null,
+        "latest": "1.15.15"
+      },
+      {
+        "cycle": "1.14",
+        "eolFrom": "2021-02-16",
+        "ltsFrom": null,
+        "latest": "1.14.15"
+      },
+      {
+        "cycle": "1.13",
+        "eolFrom": "2020-08-11",
+        "ltsFrom": null,
+        "latest": "1.13.15"
+      },
+      {
+        "cycle": "1.12",
+        "eolFrom": "2020-02-25",
+        "ltsFrom": null,
+        "latest": "1.12.17"
+      },
+      {
+        "cycle": "1.11",
+        "eolFrom": "2019-09-03",
+        "ltsFrom": null,
+        "latest": "1.11.13"
+      },
+      {
+        "cycle": "1.10",
+        "eolFrom": "2019-02-25",
+        "ltsFrom": null,
+        "latest": "1.10.8"
+      },
+      {
+        "cycle": "1.9",
+        "eolFrom": "2018-08-24",
+        "ltsFrom": null,
+        "latest": "1.9.7"
+      },
+      {
+        "cycle": "1.8",
+        "eolFrom": "2018-02-16",
+        "ltsFrom": null,
+        "latest": "1.8.7"
+      },
+      {
+        "cycle": "1.7",
+        "eolFrom": "2017-08-24",
+        "ltsFrom": null,
+        "latest": "1.7.6"
+      },
+      {
+        "cycle": "1.6",
+        "eolFrom": "2017-02-16",
+        "ltsFrom": null,
+        "latest": "1.6.4"
+      },
+      {
+        "cycle": "1.5",
+        "eolFrom": "2016-08-15",
+        "ltsFrom": null,
+        "latest": "1.5.4"
+      },
+      {
+        "cycle": "1.4",
+        "eolFrom": "2016-02-17",
+        "ltsFrom": null,
+        "latest": "1.4.3"
+      },
+      {
+        "cycle": "1.3",
+        "eolFrom": "2015-08-19",
+        "ltsFrom": null,
+        "latest": "1.3.3"
+      },
+      {
+        "cycle": "1.2",
+        "eolFrom": "2014-12-10",
+        "ltsFrom": null,
+        "latest": "1.2.2"
+      }
+    ]
+  }
+}

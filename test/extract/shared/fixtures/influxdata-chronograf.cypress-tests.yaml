@@ -1,0 +1,134 @@
+name: "chronograf/cypress"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OAUTH2_HOSTNAME: localhost
+      OAUTH2_PORT: 8087
+      OAUTH2_TEST_USER_NAME: test
+      OAUTH2_TEST_USER_EMAIL: test@oauth2.mock
+      OAUTH2_REDIRECT_URL: http://localhost:8888/oauth/oauth-mock/callback
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.10'
+
+      - name: Install pkg-config
+        run: go install github.com/influxdata/pkg-config@v0.3.0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.72
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: if [ ! -x "$(command -v yarn)" ]; then npm install -g yarn; fi
+      - run: yarn node --version
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: v3.21.0
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.13.0
+        with:
+          cluster_name: "chronograf-testing"
+          config: .github/workflows/resources/kind-config.yaml
+
+      - name: Create Enterprise Test Resources
+        run: |
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo add influxdata https://helm.influxdata.com/
+          helm repo update
+          helm show chart influxdata/influxdb-enterprise
+          helm upgrade --wait --install \
+              cert-manager jetstack/cert-manager \
+              --namespace cert-manager \
+              --create-namespace \
+              --version v1.19.5 \
+              --set prometheus.enabled=false \
+              --set webhook.timeoutSeconds=30 \
+              --set installCRDs=true
+          kubectl apply -f .github/workflows/resources/test-resources.yaml
+          kubectl create secret generic influxdb-license --from-literal=INFLUXDB_ENTERPRISE_LICENSE_KEY=${INFLUXDB_ENTERPRISE_LICENSE_KEY}
+          helm upgrade --install influxdb influxdata/influxdb-enterprise --namespace default \
+              --wait \
+              --timeout 5m \
+              --set-string envFromSecret=influxdb-license \
+              --set-string data.service.type=NodePort \
+              --set-string meta.service.type=NodePort \
+              --set data.service.nodePort=30086 \
+              --set meta.service.nodePort=30091
+          helm status influxdb -n default
+        env:
+          INFLUXDB_ENTERPRISE_LICENSE_KEY: "${{ secrets.INFLUXDB_ENTERPRISE_LICENSE_KEY }}"
+
+      - name: OAuth2 Mock Server
+        run: |
+          yarn
+          RUNNER_TRACKING_ID="" && (nohup yarn start > oauth2-mock.log 2>&1 &)
+        working-directory: ./etc/oauth2-server-mock
+
+      - name: Chronograf
+        run: |
+          make
+          RUNNER_TRACKING_ID="" &&  (nohup ./chronograf \
+          --generic-name=oauth-mock \
+          --generic-client-id=clientID \
+          --generic-client-secret=clientSecret \
+          --generic-scopes=scopes \
+          --generic-auth-url="http://$OAUTH2_HOSTNAME:$OAUTH2_PORT/oauth/authorize" \
+          --generic-api-url="http://$OAUTH2_HOSTNAME:$OAUTH2_PORT/userinfo" \
+          --generic-token-url="http://$OAUTH2_HOSTNAME:$OAUTH2_PORT/oauth/token" \
+          --public-url=http://localhost:8888 \
+          --token-secret=Q4O1T8FTbErOnmx03mGeVH3pkvKtdKr6HEmzEpNBiVMynZ/qKDdOResI3OMx4Zg9kmIfAI9ihlIV3OV5+VRfZ+iB2knLuGagEmFpG/h51CRcQY58j2NpnxdBewz91E51RRfjDYvqMrISHZCjdeuw0338Xp5UnEg32utr0ThRN0Ucv2isRr4KYJNYuvUXrjKJzjh76394JwY+bzn20L/enR2rLEtJ40ePxwuEvsE0MBUGZy79ecLZPaolQ3lkPE6X3+iV/9suN0BkBNtbQe1sGv4P522jSm24fFhXaFjetQQ/dJGehbWzsBo8uVAWB2RO0+xU2LhHFN0k0LAESD6MWw== \
+          --redir-auth-login=oauth-mock > out.log 2>&1 &)
+          sleep 10
+
+      - name: Chronograf test url
+        run: |
+          echo "InfluxDB data node status: $(curl -Isk "https://localhost:8086/ping" | head -n 1)"
+          echo "Chronograf status: $(curl -Isk "http://localhost:8888" | head -n 1)"
+          cat out.log || true
+
+      - name: Cypress
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/chronograf \
+            -w /chronograf/ui \
+            --network=host \
+            cypress/browsers:24.13.0 \
+            sh -c "apt update && apt install -y build-essential && yarn install --frozen-lockfile && yarn run cypress install && yarn run cypress run --env oauth2ServerURL=http://${{ env.OAUTH2_HOSTNAME }}:${{ env.OAUTH2_PORT }} --browser chrome --config-file githubActions-config.json --reporter junit --reporter-options 'mochaFile=cypress/results/results-[hash].xml'"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+            name: results
+            path: |
+              oauth2-mock.log
+              out.log
+              ui/cypress/videos/*.mp4
+              ui/cypress/screenshots/
+              ui/cypress/results/results-*.xml

@@ -1,0 +1,7 @@
+{
+  "name": "mixed",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

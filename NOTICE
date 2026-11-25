@@ -1,0 +1,49 @@
+runtime-pin-check
+Copyright (c) 2026 Mammost, MIT License (see LICENSE).
+
+This file lists the third-party material that ships with, or is installed by, this package.
+
+--------------------------------------------------------------------------------
+End-of-life data (data/eol.json)
+
+data/eol.json is a snapshot of release lines, end-of-life dates, LTS start dates and latest
+releases of Node.js, Python and Go, built by scripts/update-eol.mjs from:
+
+  endoflife.date  https://endoflife.date  (API: https://endoflife.date/api/v1/products/)
+  Repository: https://github.com/endoflife-date/endoflife.date
+  License: MIT. Copyright (c) 2020 endoflife.date contributors.
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+  Only the release line, end-of-life date, LTS date and latest release are copied. The product
+  descriptions on endoflife.date (derived from Wikipedia, CC BY-SA 3.0) are not copied.
+  The snapshot records its own fetch date in the "fetchedAt" field.
+
+Node.js LTS codenames (the "codename" field of the Node.js lines in data/eol.json)
+
+  Source: https://nodejs.org/download/release/index.json (the official Node.js release index).
+  Only the pairs "major version -> LTS codename" are taken. Node.js is MIT-licensed,
+  Copyright Node.js contributors. No separate terms page was found for the index itself.
+  If the index cannot be read when the snapshot is refreshed, the previous pairs are kept.
+
+--------------------------------------------------------------------------------
+Dependencies (installed by npm; not copied into this repository)
+
+  semver     ISC           Copyright (c) Isaac Z. Schlueter and Contributors
+  yaml       ISC           Copyright Eemeli Aro
+  smol-toml  BSD-3-Clause  Copyright (c) Squirrel Chat et al.
+
+Each is installed with its own license file under node_modules/<name>/.
