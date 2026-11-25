@@ -1,6 +1,6 @@
 {
   "name": "runtime-pin-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find Node, Python and Go version pins that disagree across a repo's files, with file and line.",
   "license": "MIT",
   "type": "module",
