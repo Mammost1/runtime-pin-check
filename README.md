@@ -7,7 +7,7 @@
 `.tool-versions`) บอกทุกจุดพร้อม **ไฟล์:บรรทัด** เทียบด้วย semver จริง แยกผลต่อโปรเจกต์ใน monorepo และมี `--fix` ที่แก้เฉพาะ
 ตัวเลขเวอร์ชัน ไม่แตะไบต์อื่น ไม่ใช้ AI ไม่ต้องใช้เครือข่าย และไม่ต้องมี API key ตอนรัน
 
-> ติดตั้ง: `npm install -D runtime-pin-check` หรือรันทันที `npx runtime-pin-check` · GitHub Action ยังไม่ได้ออก release
+> ติดตั้ง: `npm install -D runtime-pin-check` หรือรันทันที `npx runtime-pin-check`
 
 ## ผลลัพธ์จริง
 
@@ -55,7 +55,7 @@ runtime-pin-check: 6 pins in 1 project root, checked on 2026-11-25 (end-of-life 
 
 ## ต่างจากเครื่องมืออื่นอย่างไร
 
-EOL และ GitHub Action **ไม่ใช่จุดเด่นของเรา** เครื่องมืออื่นทำสองอย่างนี้ให้ Node อยู่แล้ว (ดูตารางด้านล่าง) สิ่งที่เรามีและเครื่องมือที่เรารันเทียบไม่มี:
+EOL **ไม่ใช่จุดเด่นของเรา** เครื่องมืออื่นทำให้ Node อยู่แล้ว (ดูตารางด้านล่าง) สิ่งที่เรามีและเครื่องมือที่เรารันเทียบไม่มี:
 
 1. **เทียบข้ามไฟล์ทั้งสามภาษา** (Node, Python, Go) ด้วย semver พร้อม `ไฟล์:บรรทัด` ของทุก source
 2. **`--fix` ที่ปลอดภัยกับ range และคงไบต์เดิม** เขียนทับเฉพาะ pin ที่เป็นเลขเวอร์ชันตรง ๆ (`22`, `22.11.0`, `node:22-alpine`) ส่วน range
@@ -75,7 +75,7 @@ EOL และ GitHub Action **ไม่ใช่จุดเด่นของ�
 | `ARG NODE_VERSION=24` ใน `FROM` | อ่านค่า | พลาด (เห็นแค่ 22.11.0) | อ่านเป็นข้อความดิบ `node:${NODE_VERSION}-alpine` |
 | `--fix` | แก้ pin ตรง ๆ คงไบต์เดิม | `--save` แก้ช่องเดียว (`engines`) | ในการรันของ recon เสนอแก้ `engines ">=22 <23"` เป็น `"20"` |
 | EOL | มี (offline, Node/Python/Go) | มีสำหรับ Node | ไม่มี |
-| GitHub Action | มี (composite) | มี | ไม่ได้ตรวจ |
+| GitHub Action | ไม่มี (รัน CLI ใน workflow ได้) | มี | ไม่ได้ตรวจ |
 | 40 repo จริง: จำนวน finding | 139 | 29 | 1,397 |
 | ใน 26 จุดขัดกันจริงของเรา เครื่องมือนั้นอ้างไฟล์:บรรทัดเดียวกันกี่จุด | — | 5 | 24 |
 
@@ -139,49 +139,19 @@ left alone (1); nothing is guessed:
 `--dry-run` พิมพ์ diff แล้วไม่เขียนไฟล์ ถ้าไม่ใส่ จะเขียนจริง เฉพาะบรรทัดที่เปลี่ยน ไบต์อื่นของไฟล์คงเดิม (รวม BOM ถ้ามี) pin ที่โปรแกรมไม่เข้าใจ
 ถูกข้าม พร้อมบอกเหตุผล ไม่เดา
 
-### GitHub Action
+### ใช้ใน CI
 
-Action เป็น **composite action**: ตั้ง Node 24 (`actions/setup-node`) แล้วรัน `dist/cli.js` ที่อยู่ในตัว action (ถ้าไม่มี `dist/` เพราะอ้างอิง branch
-จะรัน `npm ci && npm run build` ก่อน) การตั้ง Node 24 เปลี่ยน `node` ของ step ถัดไปใน job ของคุณด้วย CLI ต้องใช้ Node 22 ขึ้นไป
+ไม่มี GitHub Action แยก ให้รัน CLI เป็น step ธรรมดา (ต้องใช้ Node 22 ขึ้นไป):
 
 ```yaml
-- uses: actions/checkout@v7
-- uses: OWNER/runtime-pin-check@v0   # แทน OWNER และ ref ด้วยที่ตั้งจริงของ repository นี้หลังเผยแพร่
+- uses: actions/checkout@v4
+- uses: actions/setup-node@v4
   with:
-    path: .
-    fail-on: error
-    exclude: |
-      examples
-      docs/**
+    node-version: 22
+- run: npx runtime-pin-check .
 ```
 
-ตัวอย่างไฟล์เต็มอยู่ที่ `examples/workflows/pin-check.yml`
-
-| input | ค่าเริ่มต้น | เทียบกับ CLI |
-|---|---|---|
-| `path` | `.` | `[dir]` |
-| `fail-on` | `error` | `--fail-on` |
-| `runtime` | ว่าง (ทั้งสามภาษา) | `--runtime` |
-| `date` | ว่าง (วันนี้ UTC) | `--date` |
-| `exclude` | ว่าง | `--exclude` หนึ่งบรรทัดต่อหนึ่งพาธ |
-| `include-fixtures` | `false` | `--include-fixtures` |
-
-ค่า input ส่งผ่าน environment ไม่ถูกต่อเข้าไปในสคริปต์ รายงานแบบข้อความถูกใส่ใน job summary ด้วย CI ของ repository นี้ทดสอบ Action กับ `examples/clean-demo`
-(ต้องผ่าน) และ `examples/conflict-demo` (ต้องล้ม) และสแกน repository ตัวเอง
-
-#### การออก release ของ Action (สำหรับผู้ดูแลโปรเจกต์)
-
-`dist/` ไม่ถูก commit บน `main` ถ้าจะให้ผู้ใช้ไม่ต้อง build ตอนรัน ให้ออก release ที่ tree มี `dist/`:
-
-```bash
-git switch -c release/v0.1.0
-npm ci && npm run build
-git add -f dist                 # dist/ ถูก ignore บน main
-git commit -m "build: dist for v0.1.0"
-git tag v0.1.0
-```
-
-แล้ว push branch และ tag ด้วยตัวเอง ตอนรัน action จะติดตั้ง dependency ของ runtime (`npm ci --omit=dev`, สามแพ็กเกจ) หนึ่งครั้งต่อการรัน
+ใน GitHub Actions (`GITHUB_ACTIONS=true`) จะพิมพ์ annotation ให้ด้วย และ step จะล้มตามรหัสออกด้านบน
 
 ## รหัส finding
 
@@ -281,7 +251,7 @@ Finds **Node, Python and Go** versions that are pinned inconsistently across one
 `.python-version`, `pyproject.toml`, `go.mod`, GitHub Actions workflows, `.gitlab-ci.yml`, `mise.toml`, `.tool-versions`), with **file and line** for every
 pin, real semver comparison, results per project in a monorepo, and a `--fix` that changes only the version digits and no other byte. No AI, no network, no API key at run time.
 
-> Install: `npm install -D runtime-pin-check`, or run `npx runtime-pin-check`. The GitHub Action has no release yet.
+> Install: `npm install -D runtime-pin-check`, or run `npx runtime-pin-check`.
 
 ### What it looks like
 
@@ -298,7 +268,7 @@ and `Dockerfile` against `package.json` `>=22 <23`, and for `.python-version` 3.
 
 ### How it differs
 
-End-of-life checks and a GitHub Action are **not** what sets this apart: other tools already provide both for Node. What this adds, and the tools we ran against lack:
+End-of-life checks are **not** what sets this apart: other tools already provide them for Node. What this adds, and the tools we ran against lack:
 
 1. **Cross-file comparison for all three runtimes** with semver and `file:line` for every source.
 2. **A `--fix` that is safe with ranges and byte-preserving**: it rewrites only plain version pins (`22`, `22.11.0`, `node:22-alpine`); ranges (`>=22 <23`) are
@@ -318,7 +288,7 @@ Compared with **engines-gauge 1.1.0** and **conflic 1.1.6**. Every cell comes fr
 | `ARG NODE_VERSION=24` used in `FROM` | value resolved | missed (saw only 22.11.0) | raw text `node:${NODE_VERSION}-alpine` |
 | `--fix` | rewrites plain pins, bytes preserved | `--save` edits one field (`engines`) | in the recon run it proposed `engines ">=22 <23"` -> `"20"` |
 | End-of-life | yes (offline; Node, Python, Go) | yes, for Node | no |
-| GitHub Action | yes (composite) | yes | not checked |
+| GitHub Action | no (run the CLI in a workflow) | yes | not checked |
 | 40 real repos: findings | 139 | 29 | 1,397 |
 | Of our 26 true drift findings, how many the tool reports at the same file:line | — | 5 | 24 |
 
@@ -344,37 +314,19 @@ conflicts: `node dist/cli.js . --exclude examples`.
 `--fix` demo (`--dry-run` prints the diff and writes nothing): the Thai section shows `node dist/cli.js examples/conflict-demo --fix --to 22 --runtime node --dry-run` changing
 `.nvmrc` 20 -> 22 and `Dockerfile` `node:18-alpine` -> `node:22-alpine`, and leaving `package.json`'s `">=22 <23"` alone because it is a range.
 
-#### GitHub Action
+#### In CI
 
-A **composite action**: it sets up Node 24 (`actions/setup-node`) and runs the `dist/cli.js` that ships with the action (on a branch ref without `dist/` it runs `npm ci && npm run build` first).
-Setting up Node 24 changes `node` for the later steps of your job too; the CLI needs Node 22 or newer.
+There is no separate GitHub Action; run the CLI as a plain step (Node 22 or newer):
 
 ```yaml
-- uses: actions/checkout@v7
-- uses: OWNER/runtime-pin-check@v0   # replace OWNER and the ref with the real location once published
+- uses: actions/checkout@v4
+- uses: actions/setup-node@v4
   with:
-    path: .
-    fail-on: error
-    exclude: |
-      examples
-      docs/**
+    node-version: 22
+- run: npx runtime-pin-check .
 ```
 
-Inputs: `path` (default `.`), `fail-on` (`error`), `runtime` (empty = all), `date` (empty = today, UTC), `exclude` (one path per line), `include-fixtures` (`false`); each maps to the CLI flag of the same name.
-Inputs travel through the environment, never into the script text. The text report is also added to the job summary. A full sample is in `examples/workflows/pin-check.yml`. This repository's CI runs
-the Action on `examples/clean-demo` (must pass), on `examples/conflict-demo` (must fail), and on the repository itself.
-
-**Releasing the Action (for the maintainer).** `dist/` is not committed on `main`. To let users skip the build, release a tree that contains it:
-
-```bash
-git switch -c release/v0.1.0
-npm ci && npm run build
-git add -f dist                 # dist/ is ignored on main
-git commit -m "build: dist for v0.1.0"
-git tag v0.1.0
-```
-
-then push the branch and the tag yourself. On such a ref the action installs the three runtime dependencies (`npm ci --omit=dev`) once per run.
+Under GitHub Actions (`GITHUB_ACTIONS=true`) it also prints annotations, and the step fails by the exit codes above.
 
 ### Finding codes
 
