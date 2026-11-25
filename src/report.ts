@@ -127,8 +127,16 @@ export function formatText(report: CheckReport): string {
   if (report.singleSource.length > 0) {
     lines.push('')
     lines.push('Pinned in one place only (nothing to compare):')
+    // One pin that several project roots inherit (a root .nvmrc) is one row, not one per root.
+    const byPin = new Map<string, typeof report.singleSource>()
     for (const s of report.singleSource) {
-      lines.push(`  ${s.root === '.' ? '. (repo root)' : s.root}  ${s.runtime} ${s.raw}  ${s.file}:${s.line}`)
+      const key = `${s.runtime}\0${s.raw}\0${s.file}\0${s.line}`
+      byPin.set(key, [...(byPin.get(key) ?? []), s])
+    }
+    for (const group of byPin.values()) {
+      const s = group[0] as (typeof group)[number]
+      if (group.length === 1) lines.push(`  ${s.root === '.' ? '. (repo root)' : s.root}  ${s.runtime} ${s.raw}  ${s.file}:${s.line}`)
+      else lines.push(`  ${s.runtime} ${s.raw}  ${s.file}:${s.line}  (the same pin in ${group.length} project roots)`)
     }
   }
 

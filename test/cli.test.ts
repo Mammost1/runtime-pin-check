@@ -26,6 +26,26 @@ async function cli(args: string[], env: Record<string, string> = {}) {
   return { code, stdout, stderr }
 }
 
+describe('single-source section (rpc-night R2-3)', () => {
+  it('prints an inherited root pin once, with the number of project roots, and keeps --json whole', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'rpc-inherit-'))
+    try {
+      await writeFile(join(dir, '.nvmrc'), '24\n')
+      for (const d of ['a', 'b', 'c']) {
+        await mkdir(join(dir, d))
+        await writeFile(join(dir, d, 'package.json'), `{"name":"${d}"}\n`)
+      }
+      const text = (await cli([dir, ...DATE])).stdout
+      expect(text.match(/\.nvmrc:1/g)).toHaveLength(1)
+      expect(text).toContain('node 24  .nvmrc:1  (the same pin in 4 project roots)')
+      const json = JSON.parse((await cli([dir, ...DATE, '--json'])).stdout)
+      expect(json.summary.singleSource).toHaveLength(4) // unchanged: JSON still lists every root
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+})
+
 describe('--fix summary (rpc-night R2-5)', () => {
   it('does not call a shorter pin "already at" the target: it says the precision is kept', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'rpc-fixprec-'))
