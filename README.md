@@ -98,7 +98,7 @@ npx runtime-pin-check [dir] [options]
 | ตัวเลือก | ความหมาย |
 |---|---|
 | `[dir]` | โฟลเดอร์ที่สแกน (ค่าเริ่มต้น `.`) |
-| `--json` | พิมพ์ผลเป็น JSON (มี `findings`, `summary`, `diagnostics`) |
+| `--json` | พิมพ์ผลเป็น JSON (คีย์ระดับบนสุดดู "รูปแบบ `--json`" ด้านล่าง) |
 | `--runtime node,python,go` | ตรวจเฉพาะบางภาษา |
 | `--fail-on error\|warning\|info` | รหัสออก `1` เมื่อมี finding ระดับนี้ขึ้นไป (ค่าเริ่มต้น `error`) |
 | `--date YYYY-MM-DD` | ตรวจ EOL และ alias `lts/*` ณ วันนั้น (ค่าเริ่มต้น วันนี้ตาม UTC) ใช้ทำผลซ้ำได้ |
@@ -109,6 +109,12 @@ npx runtime-pin-check [dir] [options]
 
 รหัสออก: `0` ไม่มี finding ระดับที่สั่ง · `1` มี finding · `2` ใช้คำสั่งผิดหรืออ่านไฟล์ไม่ได้ ใน GitHub Actions (`GITHUB_ACTIONS=true`) จะพิมพ์
 annotation `::error file=…,line=…::` ให้ด้วย
+
+### รูปแบบ `--json`
+
+คีย์ระดับบนสุดของ `--json`: `schema`, `directory`, `date`, `eolDataDate`, `roots`, `sources`, `summary`, `diagnostics`, `findings` `schema`: `1` คือเลขรุ่นของรูปแบบนี้
+(จะเพิ่มเมื่อรูปแบบเปลี่ยนแบบไม่เข้ากันย้อนหลัง) `findings` แต่ละรายการมี `code`, `severity`, `runtime`, `sources`, `scopes`, `message` และแต่ละ source มี
+`runtime`, `file`, `line`, `raw`, `kind`, `constraint`, `column`, `boundTo`, `constraintText`
 
 สแกน repository ตัวเองต้องตัด `examples/` ออก เพราะมีความขัดแย้งที่ตั้งใจใส่ไว้: `node dist/cli.js . --exclude examples`
 
@@ -320,6 +326,9 @@ npx runtime-pin-check [dir] [options]
 ```
 
 From source (to work on this project): `git clone https://github.com/Mammost1/runtime-pin-check && cd runtime-pin-check && npm ci && npm run build`, then `node dist/cli.js [dir] [options]`.
+
+`--json` prints one object with these top-level keys: `schema`, `directory`, `date`, `eolDataDate`, `roots`, `sources`, `summary`, `diagnostics`, `findings`. `schema`: `1` is the format version
+(it changes only when the format changes incompatibly). Each entry of `findings` has `code`, `severity`, `runtime`, `sources`, `scopes`, `message`; each source has `runtime`, `file`, `line`, `raw`, `kind`, `constraint`, `column`, `boundTo`, `constraintText`.
 
 Options are listed in the Thai table above and in `--help`: `--json`, `--runtime node,python,go`, `--fail-on error|warning|info` (default `error`), `--date YYYY-MM-DD`,
 `--include-fixtures` (fixture folders such as `fixtures`, `__fixtures__`, `test_fixtures`, `testdata`, `test_data` are skipped by default; `test/` and `tests/` are not), `--exclude <glob>` (repeatable), `--version`, and `--fix --to <version>` with `--runtime <one>`, `--dry-run`, `--fix-ranges`. Exit codes: `0` nothing at or above `--fail-on`,

@@ -61,4 +61,11 @@ describe('README', () => {
     expect(README).toContain('GitLab `include:` is not followed')
     expect(README).toContain('GitLab `include:` ไม่ถูกตามไปอ่าน')
   })
+
+  it('documents every top-level key of --json output (rpc-night R2-4)', () => {
+    for (const key of ['schema', 'directory', 'date', 'eolDataDate', 'roots', 'sources', 'summary', 'diagnostics', 'findings']) {
+      expect(README, `--json key ${key}`).toContain('`' + key + '`')
+    }
+    expect(README).toContain('`schema`: `1`')
+  })
 })
