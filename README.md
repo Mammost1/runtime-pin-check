@@ -227,6 +227,7 @@ TI (ถูกตามข้อเท็จจริงแต่ผู้ดู�
 - **job ที่ประกาศ `defaults.run.working-directory` แต่ override บาง step กลับไปที่ root** ถูกผูกกับโฟลเดอร์ default ทั้ง job (ตั้งใจ: นี่คือวิธีที่ monorepo ประกาศว่า job รับใช้โปรเจกต์ไหน)
 - **pin ที่ root ซึ่งโปรเจกต์ลูกทุกตัวรับต่อ อาจถูกรายงานซ้ำหนึ่งครั้งต่อโปรเจกต์** เช่น `.nvmrc` ที่ root เทียบกับ Dockerfile ใน `examples/*` แต่ละตัว
   แต่ละรายการถูกต้องตามกติกา แต่ใน monorepo ที่มีโปรเจกต์ตัวอย่างหลายสิบตัวจะยาว ใช้ `--exclude examples` ถ้าไม่ต้องการตรวจโฟลเดอร์ตัวอย่าง
+- **GitLab `include:` ไม่ถูกตามไปอ่าน** อ่านเฉพาะ `.gitlab-ci.yml` ที่พบในโฟลเดอร์ที่สแกน ถ้า `image:` อยู่ในไฟล์ที่ include (`local:`, `project:`, `remote:`) จะไม่ถูกเทียบ และเครื่องมือจะรายงาน "No problems found." ได้ ทั้งที่ไฟล์นั้นปักเวอร์ชันขัดกัน
 - **Dockerfile หลาย stage ที่ใช้ Node คนละรุ่นโดยตั้งใจ** (เช่น build ด้วย 24 แล้วรันด้วย 22) ถูกรายงานเป็น `VERSION_CONFLICT` "across 1 file" ตามกติกา
 - **`mise.toml` และ `.tool-versions` ที่ระบุหลายเวอร์ชัน** (`python = ["3.12", "3.11"]`) อ่านเฉพาะตัวแรก ซึ่งเป็นตัวที่ใช้จริง ตัวที่เหลือไม่ถูกเทียบ
 - แถว source ในรายงานแสดงค่าตามที่เขียนในไฟล์ เช่น `${{ env.PYTHON_VERSION }}` แม้ข้อความหัวเรื่องจะแสดงค่าที่แปลงแล้ว
@@ -397,6 +398,7 @@ Known limits, stated plainly:
 - **A job that declares `defaults.run.working-directory` but overrides one step back to the root** is bound to the default folder for the whole job. This is deliberate: it is how a monorepo says which project a job serves.
 - **A root pin that every child project inherits can be reported once per project.** For example a root `.nvmrc` against the Dockerfile of each `examples/*` project:
   each finding is correct under the rules, but a monorepo with dozens of example projects gets a long list. Use `--exclude examples` to leave example folders out.
+- **GitLab `include:` is not followed.** Only the `.gitlab-ci.yml` files found in the scanned folder are read; an `image:` inside an included file (`local:`, `project:`, `remote:`) is not compared, so the tool can report "No problems found." while that file pins a conflicting version.
 - **A multi-stage Dockerfile that uses different Node versions on purpose** (build on 24, run on 22) is reported as a `VERSION_CONFLICT` "across 1 file", as the rules say.
 - **`mise.toml` and `.tool-versions` entries that list several versions** (`python = ["3.12", "3.11"]`) are read for the first one only, the one that is used; the others are not compared.
 - A source row shows the value as written in the file, for example `${{ env.PYTHON_VERSION }}`, even where the headline shows the resolved value.

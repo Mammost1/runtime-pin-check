@@ -56,4 +56,9 @@ describe('README', () => {
       expect(line).toContain('git clone')
     }
   })
+
+  it('says GitLab include: files are not followed (rpc-night R2-2)', () => {
+    expect(README).toContain('GitLab `include:` is not followed')
+    expect(README).toContain('GitLab `include:` ไม่ถูกตามไปอ่าน')
+  })
 })
