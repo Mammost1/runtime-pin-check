@@ -105,7 +105,7 @@ npx runtime-pin-check [dir] [options]
 | `--include-fixtures` | สแกนโฟลเดอร์ fixture ด้วย (ปกติข้ามโฟลเดอร์ชื่อ `fixtures`, `fixture`, `__fixtures__`, `test_fixtures`, `test-fixtures`, `testdata`, `test_data`, `_testdata` ทุกระดับ แต่ไม่ข้าม `test/` หรือ `tests/`) |
 | `--version` | พิมพ์เวอร์ชัน |
 | `--exclude <glob>` | ข้ามพาธที่ตรง (ใส่ซ้ำได้ เช่น `examples`, `docs/**`) |
-| `--fix --to <version>` | แก้ pin เป็นเวอร์ชันนี้ (ใช้ร่วมกับ `--runtime <หนึ่งภาษา>`, `--dry-run`, `--fix-ranges`) |
+| `--fix --to <version>` | แก้ pin เป็นเวอร์ชันนี้ (ใช้ร่วมกับ `--runtime <หนึ่งภาษา>` เมื่อมีหลายภาษา, `--dry-run`, `--fix-ranges`) |
 
 รหัสออก: `0` ไม่มี finding ระดับที่สั่ง · `1` มี finding · `2` ใช้คำสั่งผิดหรืออ่านไฟล์ไม่ได้ ใน GitHub Actions (`GITHUB_ACTIONS=true`) จะพิมพ์
 annotation `::error file=…,line=…::` ให้ด้วย
@@ -150,6 +150,8 @@ left alone (1); nothing is guessed:
 
 `--dry-run` พิมพ์ diff แล้วไม่เขียนไฟล์ ถ้าไม่ใส่ จะเขียนจริง เฉพาะบรรทัดที่เปลี่ยน ไบต์อื่นของไฟล์คงเดิม (รวม BOM ถ้ามี) pin ที่โปรแกรมไม่เข้าใจ
 ถูกข้าม พร้อมบอกเหตุผล ไม่เดา
+
+ต้องใส่ `--runtime` เฉพาะเมื่อมี pin ของมากกว่าหนึ่งภาษา (ไม่ใส่แล้วมีหลายภาษา โปรแกรมปฏิเสธด้วยรหัสออก `2`) ถ้าไม่มี pin ที่แก้ได้เลย จะพิมพ์ "nothing to change" และรหัสออก `0`
 
 `--fix` คงความละเอียดของแต่ละ pin: `--to 26.13.0` เปลี่ยน `node:16-alpine` เป็น `node:26-alpine` (ไม่ใช่ `26.13.0-alpine`) และ pin ที่เขียนสั้นกว่า `--to` (เช่น `1.27-alpine3.24` เมื่อ `--to 1.27.4`) จะไม่ถูกเขียนทับ แต่ถูกระบุชื่อในบรรทัด "kept at their own precision"
 
@@ -340,6 +342,8 @@ conflicts: `node dist/cli.js . --exclude examples`.
 
 `--fix` demo (`--dry-run` prints the diff and writes nothing): the Thai section shows `node dist/cli.js examples/conflict-demo --fix --to 22 --runtime node --dry-run` changing
 `.nvmrc` 20 -> 22 and `Dockerfile` `node:18-alpine` -> `node:22-alpine`, and leaving `package.json`'s `">=22 <23"` alone because it is a range.
+
+`--runtime` is required only when pins of more than one runtime exist (otherwise `--fix` refuses with exit code `2`); when there is nothing to fix it prints "nothing to change" and exits `0`.
 
 `--fix` keeps the precision of each pin: `--to 26.13.0` turns `node:16-alpine` into `node:26-alpine` (not `26.13.0-alpine`), and a pin written with fewer parts than `--to` (`1.27-alpine3.24` for `--to 1.27.4`) is not rewritten but named on the "kept at their own precision" line.
 

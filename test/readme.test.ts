@@ -78,4 +78,10 @@ describe('README', () => {
     expect(README).toContain('keeps the precision of each pin')
     expect(README).toContain('คงความละเอียดของแต่ละ pin')
   })
+
+  it('says when --fix needs --runtime and what it prints with no pins (rpc-night R2-8)', () => {
+    expect(README).toContain('`--runtime` is required only when pins of more than one runtime exist')
+    expect(README).toContain('ต้องใส่ `--runtime` เฉพาะเมื่อมี pin ของมากกว่าหนึ่งภาษา')
+    expect(README).toContain('"nothing to change"')
+  })
 })
