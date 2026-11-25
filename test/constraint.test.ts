@@ -137,3 +137,21 @@ describe('toRange and helpers', () => {
     expect(describeConstraint({ kind: 'unknown', reason: 'empty value' })).toBe('unparseable (empty value)')
   })
 })
+
+describe('rpc-harden F3: setup-python spellings', () => {
+  it.each([
+    ['3.14t', { kind: 'partial', version: '3.14' }],
+    ['3.13.1t', { kind: 'exact', version: '3.13.1' }],
+  ])('free-threaded %s is that CPython version', (raw, expected) => {
+    expect(parseConstraint(raw, 'python')).toEqual(expected)
+  })
+
+  it.each(['pypy-3.11', 'pypy3.10', 'pypy-3.9-v7.3.16', 'graalpy-24.1'])('%s is not compared and says why', (raw) => {
+    expect(parseConstraint(raw, 'python')).toEqual({ kind: 'unknown', reason: 'a PyPy/GraalPy build; its version is not compared with CPython pins' })
+  })
+
+  it('leaves node and go untouched by the python rules', () => {
+    expect(parseConstraint('3.14t', 'node').kind).toBe('unknown')
+  })
+})
+

@@ -177,12 +177,12 @@ describe('review F2: inline-table pyproject is read, not skipped', () => {
 })
 
 describe('GitHub workflows (real: pallets/flask tests.yaml)', () => {
-  it('a matrix becomes one source per value with its own line and matrix: true; odd values are UNPARSEABLE', () => {
+  it('a matrix becomes one source per value with its own line and matrix: true; 3.14t is CPython 3.14, PyPy is UNPARSEABLE (rpc-harden F3)', () => {
     const s = extractPython('.github/workflows/tests.yaml', real('pallets-flask.tests.yaml'))
     expect(s.map((x) => [x.line, x.raw, x.constraint.kind, x.matrix])).toEqual([
       [20, '3.15', 'partial', true],
       [21, '3.14', 'partial', true],
-      [22, '3.14t', 'unknown', true],
+      [22, '3.14t', 'partial', true],
       [25, '3.13', 'partial', true],
       [26, '3.12', 'partial', true],
       [27, '3.11', 'partial', true],

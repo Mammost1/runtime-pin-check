@@ -41,7 +41,11 @@ const PARTIAL = /^(\d+)(?:\.(\d+))?(?:\.[xX*])?$/
 function versionPart(text: string, runtime: Runtime): string {
   let t = text.trim()
   if (runtime === 'go') t = t.replace(/^go(?=\d)/, '')
-  if (runtime === 'python') t = t.replace(/^python-?(?=\d)/i, '')
+  if (runtime === 'python') {
+    t = t.replace(/^python-?(?=\d)/i, '')
+    // CPython free-threaded builds (`3.14t`, actions/setup-python) are that CPython version.
+    t = t.replace(/^(\d+\.\d+(?:\.\d+)?)t$/i, '$1')
+  }
   return t.replace(/^[vV](?=\d)/, '')
 }
 
@@ -130,6 +134,9 @@ export function parseConstraint(raw: string, runtime: Runtime): Constraint {
   const text = versionPart(raw, runtime)
   if (text === '') return { kind: 'unknown', reason: 'empty value' }
   if (ALIAS.test(text)) return { kind: 'alias', alias: text.toLowerCase() }
+  if (runtime === 'python' && /^(pypy|graalpy)/i.test(text)) {
+    return { kind: 'unknown', reason: 'a PyPy/GraalPy build; its version is not compared with CPython pins' }
+  }
   const plain = plainVersion(text)
   if (plain) return plain
   if (/\$\{|\$\(|\{\{/.test(text)) return { kind: 'unknown', reason: 'contains a variable or template expression' }
