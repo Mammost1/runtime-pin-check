@@ -1,6 +1,6 @@
 {
   "name": "runtime-pin-check",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Find Node, Python and Go version pins that disagree across a repo's files, with file and line.",
   "license": "MIT",
   "type": "module",
@@ -26,7 +26,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build": "tsup"
+    "build": "tsup",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "node-version",

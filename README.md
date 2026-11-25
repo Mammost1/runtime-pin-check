@@ -7,8 +7,7 @@
 `.tool-versions`) บอกทุกจุดพร้อม **ไฟล์:บรรทัด** เทียบด้วย semver จริง แยกผลต่อโปรเจกต์ใน monorepo และมี `--fix` ที่แก้เฉพาะ
 ตัวเลขเวอร์ชัน ไม่แตะไบต์อื่น ไม่ใช้ AI ไม่ต้องใช้เครือข่าย และไม่ต้องมี API key ตอนรัน
 
-> **สถานะ:** ยังไม่ได้เผยแพร่บน npm และยังไม่ได้ปล่อยเป็น GitHub Action ที่ใครอ้างอิงได้
-> ตอนนี้ใช้จากซอร์สตามหัวข้อ "ใช้งาน"
+> ติดตั้ง: `npm install -D runtime-pin-check` หรือรันทันที `npx runtime-pin-check` · GitHub Action ยังไม่ได้ออก release
 
 ## ผลลัพธ์จริง
 
@@ -282,7 +281,7 @@ Finds **Node, Python and Go** versions that are pinned inconsistently across one
 `.python-version`, `pyproject.toml`, `go.mod`, GitHub Actions workflows, `.gitlab-ci.yml`, `mise.toml`, `.tool-versions`), with **file and line** for every
 pin, real semver comparison, results per project in a monorepo, and a `--fix` that changes only the version digits and no other byte. No AI, no network, no API key at run time.
 
-> **Status:** not published on npm, and not released as a GitHub Action anyone can reference yet. Use it from source (see "Use").
+> Install: `npm install -D runtime-pin-check`, or run `npx runtime-pin-check`. The GitHub Action has no release yet.
 
 ### What it looks like
 
