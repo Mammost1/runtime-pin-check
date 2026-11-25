@@ -84,4 +84,9 @@ describe('README', () => {
     expect(README).toContain('ต้องใส่ `--runtime` เฉพาะเมื่อมี pin ของมากกว่าหนึ่งภาษา')
     expect(README).toContain('"nothing to change"')
   })
+
+  it('states that a root Dockerfile without a manifest is not compared with .nvmrc (rpc-night R2-7)', () => {
+    expect(README).toContain('A repository root with `.nvmrc` and a `Dockerfile` but no manifest')
+    expect(README).toContain('root ที่มี `.nvmrc` และ `Dockerfile` แต่ไม่มี manifest')
+  })
 })

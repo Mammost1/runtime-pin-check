@@ -235,6 +235,7 @@ TI (ถูกตามข้อเท็จจริงแต่ผู้ดู�
   ส่วนใหญ่เป็นขั้นตอน CI ที่ root ซึ่งไม่มี manifest และไม่มีพาธบอกว่าเป็นของโปรเจกต์ไหน ตัวอย่างความขัดแย้งจริงที่เราพลาดเพราะเรื่องนี้ เช่น node 18 เทียบ 20 ใน workflow สองไฟล์ที่ root ที่ไม่มี manifest ของ Node
 - **ขีดจำกัดที่ยังมี:** repository ที่มี Dockerfile หนึ่งไฟล์ต่อ runtime หนึ่งรุ่น (เช่น cypress-docker-images) ยังเทียบกับ pin ที่ root และให้ finding เท็จ
   เช่นเดียวกับ Dockerfile ของ image ช่วยงานที่ไม่เกี่ยวกับโปรเจกต์ (เช่น sidecar สำหรับพัฒนาใน `devenv/docker/blocks/*/Dockerfile` ของ grafana ที่ใช้ node 16/18 และ go 1.17) ซึ่งถูกเทียบกับ pin ที่ root
+- **root ที่มี `.nvmrc` และ `Dockerfile` แต่ไม่มี manifest** (`package.json`, `pyproject.toml`, `go.mod`): Dockerfile ไม่ผูกกับโปรเจกต์ใด จึงไม่ถูกเทียบกับ `.nvmrc` (ได้แค่ EOL ถ้า runtime หมดอายุ) เพิ่ม manifest เข้าไปแล้วจะเทียบกัน นี่คือกติกา "precision ก่อน recall"
 - **job ที่ประกาศ `defaults.run.working-directory` แต่ override บาง step กลับไปที่ root** ถูกผูกกับโฟลเดอร์ default ทั้ง job (ตั้งใจ: นี่คือวิธีที่ monorepo ประกาศว่า job รับใช้โปรเจกต์ไหน)
 - **pin ที่ root ซึ่งโปรเจกต์ลูกทุกตัวรับต่อ อาจถูกรายงานซ้ำหนึ่งครั้งต่อโปรเจกต์** เช่น `.nvmrc` ที่ root เทียบกับ Dockerfile ใน `examples/*` แต่ละตัว
   แต่ละรายการถูกต้องตามกติกา แต่ใน monorepo ที่มีโปรเจกต์ตัวอย่างหลายสิบตัวจะยาว ใช้ `--exclude examples` ถ้าไม่ต้องการตรวจโฟลเดอร์ตัวอย่าง
@@ -414,6 +415,7 @@ Known limits, stated plainly:
   mostly root-level CI steps in repositories whose root has no manifest and where nothing names the project. A real conflict we miss because of this: node 18 against 20 in two workflows at the root of a repository with no Node manifest.
 - **A Dockerfile per runtime release** (for example cypress-docker-images) still compares with the root pin and produces a false finding.
   The same holds for Dockerfiles for unrelated helper images (for example the dev sidecars under grafana's `devenv/docker/blocks/*/Dockerfile`, which use node 16/18 and go 1.17): they are compared with the root pin.
+- **A repository root with `.nvmrc` and a `Dockerfile` but no manifest** (`package.json`, `pyproject.toml`, `go.mod`): the Dockerfile is tied to no project, so it is not compared with `.nvmrc` (you get only an EOL warning if that runtime is past end-of-life). Adding a manifest makes them compare. This is the precision-over-recall rule.
 - **A job that declares `defaults.run.working-directory` but overrides one step back to the root** is bound to the default folder for the whole job. This is deliberate: it is how a monorepo says which project a job serves.
 - **A root pin that every child project inherits can be reported once per project.** For example a root `.nvmrc` against the Dockerfile of each `examples/*` project:
   each finding is correct under the rules, but a monorepo with dozens of example projects gets a long list. Use `--exclude examples` to leave example folders out.
