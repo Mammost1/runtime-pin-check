@@ -230,6 +230,7 @@ TI (ถูกตามข้อเท็จจริงแต่ผู้ดู�
 - **recall ลดลงโดยเจตนา:** เมื่อเทียบกับรอบก่อนใช้กติกาผูกโปรเจกต์ มี finding ที่เคยเป็นของจริง 24 รายการ (T 14 + TI 10 ที่หายเพราะกติกา) ไม่ถูกรายงานอีก source 77 ตัวใน 18 จาก 40 repo เป็น UNBOUND
   ส่วนใหญ่เป็นขั้นตอน CI ที่ root ซึ่งไม่มี manifest และไม่มีพาธบอกว่าเป็นของโปรเจกต์ไหน ตัวอย่างความขัดแย้งจริงที่เราพลาดเพราะเรื่องนี้ เช่น node 18 เทียบ 20 ใน workflow สองไฟล์ที่ root ที่ไม่มี manifest ของ Node
 - **ขีดจำกัดที่ยังมี:** repository ที่มี Dockerfile หนึ่งไฟล์ต่อ runtime หนึ่งรุ่น (เช่น cypress-docker-images) ยังเทียบกับ pin ที่ root และให้ finding เท็จ
+  เช่นเดียวกับ Dockerfile ของ image ช่วยงานที่ไม่เกี่ยวกับโปรเจกต์ (เช่น sidecar สำหรับพัฒนาใน `devenv/docker/blocks/*/Dockerfile` ของ grafana ที่ใช้ node 16/18 และ go 1.17) ซึ่งถูกเทียบกับ pin ที่ root
 - **job ที่ประกาศ `defaults.run.working-directory` แต่ override บาง step กลับไปที่ root** ถูกผูกกับโฟลเดอร์ default ทั้ง job (ตั้งใจ: นี่คือวิธีที่ monorepo ประกาศว่า job รับใช้โปรเจกต์ไหน)
 - **pin ที่ root ซึ่งโปรเจกต์ลูกทุกตัวรับต่อ อาจถูกรายงานซ้ำหนึ่งครั้งต่อโปรเจกต์** เช่น `.nvmrc` ที่ root เทียบกับ Dockerfile ใน `examples/*` แต่ละตัว
   แต่ละรายการถูกต้องตามกติกา แต่ใน monorepo ที่มีโปรเจกต์ตัวอย่างหลายสิบตัวจะยาว ใช้ `--exclude examples` ถ้าไม่ต้องการตรวจโฟลเดอร์ตัวอย่าง
@@ -404,6 +405,7 @@ Known limits, stated plainly:
 - **Recall was traded away on purpose.** Compared with the run before the project-binding rules, 24 findings that had been real (14 T and 10 TI lost to the rules) are no longer reported, and 77 sources in 18 of the 40 repositories are UNBOUND,
   mostly root-level CI steps in repositories whose root has no manifest and where nothing names the project. A real conflict we miss because of this: node 18 against 20 in two workflows at the root of a repository with no Node manifest.
 - **A Dockerfile per runtime release** (for example cypress-docker-images) still compares with the root pin and produces a false finding.
+  The same holds for Dockerfiles for unrelated helper images (for example the dev sidecars under grafana's `devenv/docker/blocks/*/Dockerfile`, which use node 16/18 and go 1.17): they are compared with the root pin.
 - **A job that declares `defaults.run.working-directory` but overrides one step back to the root** is bound to the default folder for the whole job. This is deliberate: it is how a monorepo says which project a job serves.
 - **A root pin that every child project inherits can be reported once per project.** For example a root `.nvmrc` against the Dockerfile of each `examples/*` project:
   each finding is correct under the rules, but a monorepo with dozens of example projects gets a long list. Use `--exclude examples` to leave example folders out.

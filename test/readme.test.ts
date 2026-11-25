@@ -68,4 +68,9 @@ describe('README', () => {
     }
     expect(README).toContain('`schema`: `1`')
   })
+
+  it('limit names Dockerfiles for unrelated helper images, not only cypress-docker-images (rpc-night R2-6)', () => {
+    expect(README).toContain('Dockerfiles for unrelated helper images')
+    expect(README).toContain('Dockerfile ของ image ช่วยงานที่ไม่เกี่ยวกับโปรเจกต์')
+  })
 })
