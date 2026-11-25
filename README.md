@@ -173,10 +173,10 @@ left alone (1); nothing is guessed:
 
 - **Node:** `.nvmrc`, `.node-version`, `package.json` (`engines.node`, `volta.node`, `devEngines.runtime`), `.tool-versions`, `mise.toml`,
   `Dockerfile*` (`FROM node:` รวม multi-stage และ `ARG` ที่ใช้ใน `FROM`), `.github/workflows/*.yml` (`actions/setup-node`, ค่าใน matrix เป็น source แยก),
-  `.gitlab-ci.yml` (`image: node:`)
+  `.gitlab-ci.yml` (`image: node:` ระดับบนสุด, `default:` และของแต่ละ job)
 - **Python:** `.python-version`, `pyproject.toml` (`project.requires-python`, `tool.poetry.dependencies.python`), `.tool-versions`, `mise.toml`,
-  `Dockerfile*`, `actions/setup-python`, `runtime.txt` ยังไม่อ่าน `Pipfile`, `setup.py`/`setup.cfg`, `tox.ini` และ action อื่นเช่น `astral-sh/setup-uv`
-- **Go:** `go.mod` (`go` และ `toolchain`), `.tool-versions`, `mise.toml`, `Dockerfile*` (`FROM golang:`), `actions/setup-go` ยังไม่อ่าน `go.work` และ `GOTOOLCHAIN`
+  `Dockerfile*`, `.gitlab-ci.yml` (`image: python:`), `actions/setup-python`, `runtime.txt` ยังไม่อ่าน `Pipfile`, `setup.py`/`setup.cfg`, `tox.ini` และ action อื่นเช่น `astral-sh/setup-uv`
+- **Go:** `go.mod` (`go` และ `toolchain`), `.tool-versions`, `mise.toml`, `Dockerfile*` (`FROM golang:`), `.gitlab-ci.yml` (`image: golang:`), `actions/setup-go` ยังไม่อ่าน `go.work` และ `GOTOOLCHAIN`
 - Docker image: ตีความเป็นภาษาก็ต่อเมื่อเป็น image ทางการและ mirror ที่รู้จัก ถ้าเป็น image อื่นจะไม่เดา
 
 ## ผูกไฟล์กับโปรเจกต์อย่างไร (สำคัญใน monorepo)
@@ -223,6 +223,9 @@ TI (ถูกตามข้อเท็จจริงแต่ผู้ดู�
 - **job ที่ประกาศ `defaults.run.working-directory` แต่ override บาง step กลับไปที่ root** ถูกผูกกับโฟลเดอร์ default ทั้ง job (ตั้งใจ: นี่คือวิธีที่ monorepo ประกาศว่า job รับใช้โปรเจกต์ไหน)
 - **pin ที่ root ซึ่งโปรเจกต์ลูกทุกตัวรับต่อ อาจถูกรายงานซ้ำหนึ่งครั้งต่อโปรเจกต์** เช่น `.nvmrc` ที่ root เทียบกับ Dockerfile ใน `examples/*` แต่ละตัว
   แต่ละรายการถูกต้องตามกติกา แต่ใน monorepo ที่มีโปรเจกต์ตัวอย่างหลายสิบตัวจะยาว ใช้ `--exclude examples` ถ้าไม่ต้องการตรวจโฟลเดอร์ตัวอย่าง
+- **Dockerfile หลาย stage ที่ใช้ Node คนละรุ่นโดยตั้งใจ** (เช่น build ด้วย 24 แล้วรันด้วย 22) ถูกรายงานเป็น `VERSION_CONFLICT` "across 1 file" ตามกติกา
+- **`mise.toml` และ `.tool-versions` ที่ระบุหลายเวอร์ชัน** (`python = ["3.12", "3.11"]`) อ่านเฉพาะตัวแรก ซึ่งเป็นตัวที่ใช้จริง ตัวที่เหลือไม่ถูกเทียบ
+- แถว source ในรายงานแสดงค่าตามที่เขียนในไฟล์ เช่น `${{ env.PYTHON_VERSION }}` แม้ข้อความหัวเรื่องจะแสดงค่าที่แปลงแล้ว
 - PyPy และ GraalPy (`pypy-3.11` ใน `actions/setup-python`) ไม่ถูกเทียบกับ pin ของ CPython ระบบรายงานเป็น `UNPARSEABLE` พร้อมเหตุผล
 - ไม่มี precision ของเครื่องมืออื่นให้เทียบ เพราะไม่ได้ติดป้าย finding ของเขา
 - diagnostic ที่เป็นเท็จ 2 รายการใน 1 จาก 40 repo (YAML หลายเอกสารใต้ `.github/workflows/resources/` ที่ไม่ใช่ workflow) ถูกแก้ใน `f80ed6e` วัดซ้ำบน 40 repo เดิมแล้ว: finding เหมือน `483d4fb` ทุก repo และ diagnostic เหลือ 0
@@ -344,10 +347,10 @@ Broken YAML, TOML or JSON is reported as a file-level diagnostic (in `--json` an
 ### What it reads
 
 - **Node:** `.nvmrc`, `.node-version`, `package.json` (`engines.node`, `volta.node`, `devEngines.runtime`), `.tool-versions`, `mise.toml`, `Dockerfile*` (`FROM node:`, multi-stage, `ARG` used in `FROM`),
-  `.github/workflows/*.yml` (`actions/setup-node`; each matrix value is its own source), `.gitlab-ci.yml` (`image: node:`).
-- **Python:** `.python-version`, `pyproject.toml` (`project.requires-python`, `tool.poetry.dependencies.python`), `.tool-versions`, `mise.toml`, `Dockerfile*`, `actions/setup-python`, `runtime.txt`.
+  `.github/workflows/*.yml` (`actions/setup-node`; each matrix value is its own source), `.gitlab-ci.yml` (`image: node:` at the top level, under `default:` and in each job).
+- **Python:** `.python-version`, `pyproject.toml` (`project.requires-python`, `tool.poetry.dependencies.python`), `.tool-versions`, `mise.toml`, `Dockerfile*`, `.gitlab-ci.yml` (`image: python:`), `actions/setup-python`, `runtime.txt`.
   Not read: `Pipfile`, `setup.py`/`setup.cfg`, `tox.ini`, other actions such as `astral-sh/setup-uv`.
-- **Go:** `go.mod` (`go` and `toolchain`), `.tool-versions`, `mise.toml`, `Dockerfile*` (`FROM golang:`), `actions/setup-go`. Not read: `go.work`, `GOTOOLCHAIN`.
+- **Go:** `go.mod` (`go` and `toolchain`), `.tool-versions`, `mise.toml`, `Dockerfile*` (`FROM golang:`), `.gitlab-ci.yml` (`image: golang:`), `actions/setup-go`. Not read: `go.work`, `GOTOOLCHAIN`.
 - Docker images count as a runtime only when they are official images or well-known mirrors; other images are ignored, not guessed.
 
 ### How files are tied to projects
@@ -389,6 +392,9 @@ Known limits, stated plainly:
 - **A job that declares `defaults.run.working-directory` but overrides one step back to the root** is bound to the default folder for the whole job. This is deliberate: it is how a monorepo says which project a job serves.
 - **A root pin that every child project inherits can be reported once per project.** For example a root `.nvmrc` against the Dockerfile of each `examples/*` project:
   each finding is correct under the rules, but a monorepo with dozens of example projects gets a long list. Use `--exclude examples` to leave example folders out.
+- **A multi-stage Dockerfile that uses different Node versions on purpose** (build on 24, run on 22) is reported as a `VERSION_CONFLICT` "across 1 file", as the rules say.
+- **`mise.toml` and `.tool-versions` entries that list several versions** (`python = ["3.12", "3.11"]`) are read for the first one only, the one that is used; the others are not compared.
+- A source row shows the value as written in the file, for example `${{ env.PYTHON_VERSION }}`, even where the headline shows the resolved value.
 - PyPy and GraalPy (`pypy-3.11` in `actions/setup-python`) are not compared with CPython pins; they are reported as `UNPARSEABLE` with that reason.
 - No precision for other tools: we did not label their findings.
 - Two false diagnostics in 1 of the 40 repositories (multi-document YAML under `.github/workflows/resources/` that is not a workflow) were fixed in `f80ed6e` and re-measured on the same 40 repositories: the findings are identical to `483d4fb` in every repository and the diagnostics dropped to 0. There is still no real diagnostic (a genuinely broken file) among the 40, so no evidence from real repositories that diagnostics catch broken files (unit tests only).

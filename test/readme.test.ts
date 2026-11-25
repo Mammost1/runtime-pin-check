@@ -24,4 +24,21 @@ describe('README', () => {
     const flags = new Set([...README.matchAll(/`(--[a-z][a-z-]+)/g)].map((m) => m[1] as string).filter((f) => !otherTools.has(f)))
     for (const flag of flags) expect(USAGE, `${flag} is in README`).toContain(flag)
   })
+
+  it('states the limits the tester found instead of hiding them (rpc-harden F6, F8, F9)', () => {
+    // F9: multi-stage Dockerfile with different Node versions on purpose.
+    expect(README).toContain('A multi-stage Dockerfile that uses different Node versions on purpose')
+    expect(README).toContain('Dockerfile หลาย stage ที่ใช้ Node คนละรุ่นโดยตั้งใจ')
+    // F8: mise / .tool-versions lists are read for the first version only.
+    expect(README).toContain('are read for the first one only')
+    expect(README).toContain('อ่านเฉพาะตัวแรก')
+    // F6: source rows show the value as written (an env expression), not the resolved one.
+    expect(README).toContain('A source row shows the value as written in the file')
+  })
+
+  it('names .gitlab-ci.yml python and golang images only because they are read (rpc-harden F7)', () => {
+    expect(README).toContain('`.gitlab-ci.yml` (`image: python:`)')
+    expect(README).toContain('`.gitlab-ci.yml` (`image: golang:`)')
+  })
 })
+
